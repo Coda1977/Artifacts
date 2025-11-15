@@ -1,966 +1,536 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Strategy Workshop</title>
-    <style>
-        :root {
-            --bg-primary: #F5F0E8;
-            --text-primary: #1A1A1A;
-            --accent-yellow: #FFD60A;
-            --accent-blue: #0066CC;
-            --text-secondary: #4A4A4A;
-            --white: #FFFFFF;
-            --dark-bg: #2A2A2A;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.7;
-            overflow: hidden;
-        }
-
-        .container {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        header {
-            background: var(--white);
-            padding: 32px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-            z-index: 10;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-
-        .timer {
-            font-size: clamp(32px, 5vw, 48px);
-            font-weight: 900;
-            color: var(--text-primary);
-            min-width: 150px;
-            text-align: center;
-            letter-spacing: -1px;
-        }
-
-        .progress-bar {
-            flex: 1;
-            height: 12px;
-            background: var(--bg-primary);
-            border-radius: 100px;
-            margin: 0 32px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--accent-yellow);
-            border-radius: 100px;
-            transition: width 0.3s ease;
-        }
-
-        .slide-counter {
-            font-size: clamp(28px, 4vw, 36px);
-            font-weight: 900;
-            color: var(--accent-blue);
-            letter-spacing: -1px;
-            min-width: 120px;
-            text-align: center;
-            background: var(--bg-primary);
-            padding: 8px 20px;
-            border-radius: 100px;
-        }
-
-        main {
-            flex: 1;
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            padding: 64px 32px;
-            overflow-y: auto;
-            scroll-behavior: smooth;
-        }
-
-        .slide {
-            display: none;
-            animation: fadeIn 0.6s ease-out;
-            width: 100%;
-            max-width: 960px;
-            padding-bottom: 128px;
-        }
-
-        .slide.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        h1 {
-            font-size: clamp(48px, 8vw, 80px);
-            font-weight: 900;
-            letter-spacing: -2px;
-            line-height: 1.1;
-            margin-bottom: 32px;
-            color: var(--text-primary);
-        }
-
-        h2 {
-            font-size: clamp(32px, 5vw, 48px);
-            font-weight: 700;
-            letter-spacing: -1px;
-            line-height: 1.2;
-            margin-bottom: 32px;
-            color: var(--text-primary);
-        }
-
-        h3 {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 16px;
-            color: inherit;
-            letter-spacing: -0.5px;
-        }
-
-        p {
-            font-size: 18px;
-            font-weight: 400;
-            line-height: 1.7;
-            color: inherit;
-            margin-bottom: 16px;
-        }
-
-        .subtitle {
-            font-size: 24px;
-            color: var(--text-secondary);
-            margin-bottom: 64px;
-            font-weight: 400;
-        }
-
-        .content-box {
-            background: var(--white);
-            border-radius: 24px;
-            padding: 48px;
-            margin-bottom: 32px;
-            transition: all 0.3s ease;
-        }
-
-        .content-box:hover {
-            transform: translateY(-2px);
-        }
-
-        .content-box h3,
-        .content-box strong {
-            color: var(--text-primary);
-        }
-
-        .content-box p,
-        .content-box li {
-            color: var(--text-secondary);
-        }
-
-        .highlight-box {
-            background: var(--accent-blue);
-            color: var(--white);
-            border-radius: 24px;
-            padding: 48px;
-            margin-bottom: 32px;
-            transition: all 0.3s ease;
-        }
-
-        .highlight-box:hover {
-            transform: translateY(-2px);
-        }
-
-        .highlight-box *,
-        .highlight-box h3,
-        .highlight-box p,
-        .highlight-box li,
-        .highlight-box strong {
-            color: var(--white) !important;
-        }
-
-        .warning-box {
-            background: var(--dark-bg);
-            color: var(--white);
-            border-radius: 24px;
-            padding: 48px;
-            margin-bottom: 32px;
-            transition: all 0.3s ease;
-        }
-
-        .warning-box:hover {
-            transform: translateY(-2px);
-        }
-
-        .warning-box *,
-        .warning-box h3,
-        .warning-box p,
-        .warning-box li,
-        .warning-box strong {
-            color: var(--white) !important;
-        }
-
-        .success-box {
-            background: var(--accent-yellow);
-            color: var(--text-primary);
-            border-radius: 24px;
-            padding: 48px;
-            margin-bottom: 32px;
-            transition: all 0.3s ease;
-        }
-
-        .success-box:hover {
-            transform: translateY(-2px);
-        }
-
-        .success-box *,
-        .success-box h3,
-        .success-box p,
-        .success-box li,
-        .success-box strong {
-            color: var(--text-primary) !important;
-        }
-
-        .exercise-box {
-            background: var(--white);
-            border: 3px solid var(--accent-yellow);
-            border-radius: 24px;
-            padding: 48px;
-            margin-bottom: 32px;
-            transition: all 0.3s ease;
-        }
-
-        .exercise-box:hover {
-            transform: translateY(-2px);
-        }
-
-        .exercise-box h3,
-        .exercise-box strong {
-            color: var(--text-primary);
-        }
-
-        .exercise-box p,
-        .exercise-box li {
-            color: var(--text-secondary);
-        }
-
-        .case-data {
-            background: var(--white);
-            border-left: 6px solid var(--accent-yellow);
-            padding: 32px;
-            margin: 32px 0;
-            border-radius: 0 16px 16px 0;
-        }
-
-        .case-data h3,
-        .case-data strong {
-            color: var(--text-primary);
-        }
-
-        .case-data p,
-        .case-data li {
-            color: var(--text-secondary);
-        }
-
-        .expert-opinion {
-            background: var(--white);
-            border-left: 6px solid var(--accent-blue);
-            padding: 32px;
-            margin: 32px 0;
-            border-radius: 0 16px 16px 0;
-        }
-
-        .expert-opinion h3,
-        .expert-opinion strong {
-            color: var(--text-primary);
-        }
-
-        .expert-opinion p,
-        .expert-opinion li {
-            color: var(--text-secondary);
-        }
-
-        ul, ol {
-            margin-left: 32px;
-            margin-bottom: 24px;
-        }
-
-        li {
-            margin-bottom: 12px;
-            font-size: 18px;
-        }
-
-        button {
-            background: var(--text-primary);
-            color: var(--bg-primary);
-            border: none;
-            padding: 16px 40px;
-            border-radius: 100px;
-            font-size: 18px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            letter-spacing: -0.5px;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        button:disabled {
-            background: var(--text-secondary);
-            cursor: not-allowed;
-            transform: none;
-            opacity: 0.5;
-        }
-
-        button:disabled:hover {
-            box-shadow: none;
-        }
-
-        .secondary-button {
-            background: var(--accent-yellow);
-            color: var(--text-primary);
-            font-weight: 700;
-        }
-
-        .secondary-button:hover {
-            background: #FFC700;
-        }
-
-        footer {
-            background: var(--white);
-            padding: 32px 48px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-            z-index: 10;
-            box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
-        }
-
-        .reveal-content {
-            display: none;
-            margin-top: 48px;
-            padding-top: 48px;
-            border-top: 2px solid var(--bg-primary);
-        }
-
-        .reveal-content.show {
-            display: block;
-            animation: fadeIn 0.6s ease-out;
-        }
-
-        @media (max-width: 767px) {
-            header {
-                padding: 16px;
-                flex-wrap: wrap;
-            }
-
-            .timer {
-                font-size: 28px;
-                min-width: 100px;
-            }
-
-            .slide-counter {
-                font-size: 24px;
-                min-width: 90px;
-                padding: 6px 16px;
-            }
-
-            .progress-bar {
-                width: 100%;
-                order: 3;
-                margin: 16px 0 0 0;
-            }
-
-            main {
-                padding: 32px 16px;
-            }
-
-            .content-box,
-            .highlight-box,
-            .warning-box,
-            .success-box,
-            .exercise-box {
-                padding: 32px 24px;
-            }
-
-            .case-data,
-            .expert-opinion {
-                padding: 24px;
-            }
-
-            footer {
-                padding: 24px;
-            }
-
-            button {
-                padding: 14px 32px;
-                font-size: 16px;
-            }
-        }
-
-        main {
-            scrollbar-width: thin;
-            scrollbar-color: var(--accent-yellow) var(--bg-primary);
-        }
-
-        main::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        main::-webkit-scrollbar-track {
-            background: var(--bg-primary);
-        }
-
-        main::-webkit-scrollbar-thumb {
-            background: var(--accent-yellow);
-            border-radius: 100px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <header>
-            <div class="timer" id="timer">00:00</div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progress"></div>
-            </div>
-            <div class="slide-counter">
-                <span id="current-slide">1</span>/<span id="total-slides">15</span>
-            </div>
-        </header>
-
-        <main id="main-content">
-            <div class="slide active">
-                <h1>Strategy Workshop</h1>
-                <p class="subtitle">Master strategy through practice</p>
-                <div class="content-box">
-                    <h3>Welcome Teams</h3>
-                    <p>You'll master a proven strategy framework through hands-on practice.</p>
-                    <p><strong>What you'll learn:</strong> How to identify critical challenges, design strategic approaches, and create coherent action plans.</p>
-                    <p><strong>Format:</strong> Practice cases with expert solutions to compare against your thinking.</p>
-                </div>
-                <div class="highlight-box">
-                    <h3>How This Works</h3>
-                    <ul>
-                        <li>Timer tracks total elapsed time</li>
-                        <li>Discuss first, then reveal insights</li>
-                        <li>Navigate with buttons below</li>
-                        <li>Debate is good</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="slide">
-                <h2>Define Strategy</h2>
-                <div class="exercise-box">
-                    <h3>Solo Work (2 min)</h3>
-                    <ul>
-                        <li>Write YOUR definition of strategy</li>
-                        <li>What makes something "strategic"?</li>
-                    </ul>
-                </div>
-                <div class="content-box">
-                    <h3>Team Share (3 min)</h3>
-                    <ol>
-                        <li>Share definitions</li>
-                        <li>Notice patterns</li>
-                        <li>Pick one to share</li>
-                    </ol>
-                </div>
-                <button onclick="toggleReveal(this)" class="secondary-button">Reveal Insight</button>
-                <div class="reveal-content">
-                    <div class="expert-opinion">
-                        <h3>The Insight</h3>
-                        <p>Good strategy isn't about goals or visions.</p>
-                        <p><strong>It's about identifying and overcoming critical obstacles.</strong></p>
-                    </div>
-                    <div class="content-box">
-                        <h3>Three Parts of a Good Strategy</h3>
-                        <ol>
-                            <li><strong>Diagnosis:</strong> Find the critical challenge</li>
-                            <li><strong>Guiding Policy:</strong> Choose your approach</li>
-                            <li><strong>Coherent Actions:</strong> Coordinate your moves</li>
-                        </ol>
-                    </div>
-                </div>
-            </div>
-
-            <div class="slide">
-                <h2>Diagnosis & Crux</h2>
-                <div class="content-box">
-                    <h3>What's Diagnosis?</h3>
-                    <p>Like a doctor examining a patient, diagnosis looks past symptoms to find root causes.</p>
-                    <p>A good diagnosis tells a clear story: "This is what's really going on here."</p>
-                    <p><strong>It simplifies complexity into understanding.</strong></p>
-                    <ul>
-                        <li>Names the critical challenges (not every problem)</li>
-                        <li>Shows how different issues connect</li>
-                        <li>Often reframes the situation surprisingly</li>
-                    </ul>
-                </div>
-                <div class="highlight-box">
-                    <h3>The Crux</h3>
-                    <p>Within your diagnosis, find the ONE challenge that matters most.</p>
-                    <p>Think of it as the knot that, once untied, makes everything else easier.</p>
-                    <p><strong>Three essential criteria:</strong></p>
-                    <ul>
-                        <li><strong>Critical:</strong> If you don't solve this, nothing else matters</li>
-                        <li><strong>Solvable:</strong> Actually within your power to address</li>
-                        <li><strong>Keystone:</strong> Solving it creates cascading positive effects</li>
-                    </ul>
-                </div>
-                <div class="expert-opinion">
-                    <h3>Real Example: Nokia 2007</h3>
-                    <p><strong>Symptoms:</strong> Falling market share, low employee morale, declining profits.</p>
-                    <p><strong>The Real Crux:</strong> "The basis of competition in phones shifted from hardware excellence to software ecosystems, but Nokia was organized only for hardware."</p>
-                    <p>See how the crux explains WHY the symptoms exist?</p>
-                </div>
-            </div>
-
-            <div class="slide">
-                <h2>Case: PageTurner Books</h2>
-                <div class="case-data">
-                    <h3>Company Situation</h3>
-                    <p>50-store bookstore chain struggling in 2012. Sales declining 15% yearly.</p>
-                    <ul>
-                        <li>70% of revenue comes from just 20% of stores (ones with cafes)</li>
-                        <li>Online sales exist but lose money on every order</li>
-                        <li>Customers love browsing in stores, then buy the same books cheaper on Amazon</li>
-                        <li>High inventory costs are destroying profit margins</li>
-                        <li>Locked into 5+ year store leases</li>
-                    </ul>
-                    <p><strong>CEO's Strategy:</strong> "Become the most beloved bookstore brand and return to profitability."</p>
-                </div>
-                <div class="exercise-box">
-                    <h3>Find the Problems (5 min)</h3>
-                    <ol>
-                        <li>What's wrong with the CEO's "strategy"?</li>
-                        <li>List all the challenges PageTurner faces</li>
-                        <li>Which challenge might be the crux?</li>
-                    </ol>
-                    <p style="margin-top: 16px;"><strong>Example of a challenge:</strong> "Our stores generate foot traffic but not purchases."</p>
-                </div>
-            </div>
-
-            <div class="slide">
-                <h2>Identify the Crux</h2>
-                <div class="content-box">
-                    <h3>Remember the Criteria</h3>
-                    <p>The crux is the ONE challenge that unlocks everything else.</p>
-                    <ul>
-                        <li><strong>Critical:</strong> Without solving this, nothing else matters</li>
-                        <li><strong>Solvable:</strong> Actually within PageTurner's control</li>
-                        <li><strong>Keystone:</strong> Fixing this makes other problems easier</li>
-                    </ul>
-                </div>
-                <div class="exercise-box">
-                    <h3>Team Debate (10 min)</h3>
-                    <p>From your list of challenges, which ONE is the true crux?</p>
-                    <p>Test each challenge against the three criteria above.</p>
-                    <p>Be ready to defend your choice.</p>
-                </div>
-                <button onclick="toggleReveal(this)" class="secondary-button">Reveal Expert Crux</button>
-                <div class="reveal-content">
-                    <div class="success-box">
-                        <h3>The Expert's Crux</h3>
-                        <p>"PageTurner has expensive long-term store leases for a retail model that no longer works."</p>
-                        <p><strong>The real challenge: Transform these fixed-cost liabilities into revenue-generating assets before running out of cash.</strong></p>
-                    </div>
-                    <div class="content-box">
-                        <h3>Why This Is THE Crux</h3>
-                        <ul>
-                            <li><strong>Critical:</strong> Company bleeds money every month - will die before leases expire</li>
-                            <li><strong>Solvable:</strong> Can't break leases, but CAN reimagine what happens inside stores</li>
-                            <li><strong>Keystone:</strong> New store model solves inventory, online, and profit problems</li>
-                        </ul>
-                        <p><strong>Note:</strong> The expert reframed from "competing with Amazon" to "asset transformation."</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="slide">
-                <h2>Guiding Policy</h2>
-                <div class="content-box">
-                    <h3>What's a Guiding Policy?</h3>
-                    <p>Your overall approach for overcoming the crux. It's a method, not a goal.</p>
-                    <p><strong>A good policy rules things out.</strong> It says "we'll do it THIS way, not THAT way."</p>
-                    <p>Think of it as choosing whether to go around, through, or over an obstacle.</p>
-                </div>
-                <div class="highlight-box">
-                    <h3>Common Policy Types</h3>
-                    <ul>
-                        <li><strong>Focus:</strong> Stop doing many things to excel at few</li>
-                        <li><strong>Leverage:</strong> Use existing assets in new ways</li>
-                        <li><strong>Proximate:</strong> Break big challenges into achievable steps</li>
-                        <li><strong>Asymmetric:</strong> Compete where others can't or won't</li>
-                    </ul>
-                </div>
-                <div class="expert-opinion">
-                    <h3>Southwest Airlines Example</h3>
-                    <p><strong>Their Crux:</strong> "How do we compete against established airlines with deep pockets?"</p>
-                    <p><strong>Their Policy:</strong> "Turn what big airlines consider necessary features into unnecessary costs."</p>
-                    <p>This ruled out: assigned seats, multiple aircraft types, hub systems, meal service, and connecting flights. By defining what NOT to do, Southwest created a new way to compete.</p>
-                </div>
-            </div>
-
-            <div class="slide">
-                <h2>Design Three Policies</h2>
-                <div class="exercise-box">
-                    <h3>Create 3 Different Guiding Policies (15 min)</h3>
-                    <p>For PageTurner's crux (transforming store liabilities into assets), design three distinct policies:</p>
-                    <ol>
-                        <li><strong>Focus Policy:</strong> What could we stop doing to excel at one thing?</li>
-                        <li><strong>Leverage Policy:</strong> How could we exploit an unexpected asymmetry?</li>
-                        <li><strong>Redesign Policy:</strong> How could we reimagine the entire model?</li>
-                    </ol>
-                    <p>Write each policy as 1-2 clear sentences describing your approach.</p>
-                </div>
-                <button onclick="toggleReveal(this)" class="secondary-button">Reveal Expert Policies</button>
-                <div class="reveal-content">
-                    <div class="success-box">
-                        <h3>Three Expert Policies</h3>
-                        <ol>
-                            <li><strong>Leverage Policy:</strong> "Partner with Amazon to become their premium physical showroom, getting paid for what we already do while keeping our profitable cafe operations. We'll embrace the showrooming instead of fighting it."</li>
-                            <li><strong>Focus Policy:</strong> "Convert 80% of each store into membership-based urban work clubs, keeping only curated book collections. We'll stop trying to be retailers and become productivity spaces."</li>
-                            <li><strong>Redesign Policy:</strong> "Shift from selling books to selling time and community. Stores become subscription-based 'third places' where books create atmosphere for what we're really selling: a place to belong."</li>
-                        </ol>
-                    </div>
-                    <div class="content-box">
-                        <p><strong>Notice:</strong> Each policy takes a completely different approach to the same crux. That's the power of strategic choice.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="slide">
-                <h2>Coherent Actions</h2>
-                <div class="content-box">
-                    <h3>What Makes Actions Coherent?</h3>
-                    <p>Coherent actions work together like fingers making a fist. Each one makes the others stronger.</p>
-                    <p><strong>Key principle:</strong> It's not a list of good ideas. It's a coordinated set of moves that reinforce each other to implement your policy.</p>
-                    <p>Ask: "If we do A, does it make B easier or harder?"</p>
-                </div>
-                <div class="warning-box">
-                    <h3>Signs of Incoherent Actions</h3>
-                    <ul>
-                        <li>One action undoes another (cut costs + improve service)</li>
-                        <li>Fighting for same resources (everyone needs the IT team)</li>
-                        <li>Sending mixed messages to customers or staff</li>
-                        <li>Actually just goals in disguise ("improve satisfaction")</li>
-                    </ul>
-                </div>
-                <div class="expert-opinion">
-                    <h3>Starbucks Example</h3>
-                    <p><strong>Their Crux:</strong> Coffee becoming commoditized - McDonald's selling "premium" coffee.</p>
-                    <p><strong>Their Policy:</strong> Re-establish ourselves as the authentic coffee craft experience.</p>
-                    <p><strong>Coherent Actions:</strong></p>
-                    <ol>
-                        <li>Closed 7,100 stores for retraining (signal: quality matters more than revenue)</li>
-                        <li>Removed breakfast sandwiches (protect coffee aroma)</li>
-                        <li>Installed new espresso machines (baristas could see customers again)</li>
-                        <li>Slowed down service (craft takes time)</li>
-                    </ol>
-                    <p>Every action reinforced the same message: "We're about coffee craft, not fast food."</p>
-                </div>
-            </div>
-
-            <div class="slide">
-                <h2>Design Actions</h2>
-                <div class="content-box">
-                    <h3>Your Guiding Policy</h3>
-                    <p>"Transform our stores from book retailers into subscription-based community spaces where books create atmosphere for what we're really selling: productive social environments."</p>
-                    <p>In other words: Stop selling books. Start selling belonging.</p>
-                </div>
-                <div class="exercise-box">
-                    <h3>Create 5 Coherent Actions (15 min)</h3>
-                    <ol>
-                        <li>Support the policy above</li>
-                        <li>Reinforce each other</li>
-                        <li>Could start within 90 days</li>
-                        <li>Work within current lease constraints</li>
-                    </ol>
-                </div>
-                <button onclick="toggleReveal(this)" class="secondary-button">Reveal Expert Actions</button>
-                <div class="reveal-content">
-                    <div class="success-box">
-                        <h3>Expert's Five Coherent Actions</h3>
-                        <ol>
-                            <li><strong>Launch "PageTurner Plus" at $15/month:</strong> Unlimited store access, reserved desks, free coffee, 20% book discount</li>
-                            <li><strong>Convert 60% of space to work zones:</strong> Quiet zones, collaboration areas, phone booths - all bookable via app</li>
-                            <li><strong>Transform 80% of staff into Community Hosts:</strong> From book sellers to community builders who facilitate connections</li>
-                            <li><strong>Create tiered membership spaces:</strong> Basic members get common areas, Premium gets private offices</li>
-                            <li><strong>Partner with local professionals:</strong> Weekly workshops on writing, business, creativity - exclusive to members</li>
-                        </ol>
-                    </div>
-                    <div class="content-box">
-                        <h3>How They Connect</h3>
-                        <p>Membership funds space conversion. Less retail floor means fewer sellers needed. Hosts run member programs. Tiered pricing drives premium upgrades. Workshops create community. Every action reduces dependence on book sales while increasing recurring revenue.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="slide">
-                <h2>The Complete Model</h2>
-                <div class="highlight-box">
-                    <h3>How Strategy Works</h3>
-                    <p>You've now practiced each part. Here's how they connect:</p>
-                    <ol>
-                        <li><strong>Diagnosis finds the crux</strong> - The ONE critical, solvable challenge</li>
-                        <li><strong>Policy sets direction</strong> - Your chosen approach to overcome that challenge</li>
-                        <li><strong>Actions make it real</strong> - Specific moves that reinforce each other</li>
-                    </ol>
-                    <p>Think of it as a chain: Right problem → Smart approach → Coordinated execution</p>
-                </div>
-                <div class="content-box">
-                    <h3>The PageTurner Example</h3>
-                    <ul>
-                        <li><strong>Diagnosis:</strong> "Long leases trap us in a failed retail model"</li>
-                        <li><strong>Policy:</strong> "Transform stores into community spaces"</li>
-                        <li><strong>Actions:</strong> Membership model + space conversion + staff transformation</li>
-                    </ul>
-                    <p>See how each part flows from the previous? The diagnosis shapes the policy. The policy guides the actions.</p>
-                </div>
-                <div class="expert-opinion">
-                    <h3>Common Mistakes to Avoid</h3>
-                    <ul>
-                        <li><strong>Starting with actions:</strong> "Let's launch an app!" (But why?)</li>
-                        <li><strong>Confusing goals with strategy:</strong> "Be #1 in our market" (That's a wish)</li>
-                        <li><strong>Kitchen sink approach:</strong> Twenty "strategic priorities" (That's a to-do list)</li>
-                    </ul>
-                    <p><strong>Remember:</strong> Good strategy makes hard choices. It says NO more than YES.</p>
-                </div>
-            </div>
-
-            <div class="slide">
-                <h2>Strategy Traps</h2>
-                <div class="warning-box">
-                    <h3>Red Flag</h3>
-                    <p>The most dangerous bad strategies look good on the surface.</p>
-                    <p>They use the right buzzwords and follow the right format.</p>
-                    <p><strong>But they contain fatal flaws that guarantee failure.</strong></p>
-                </div>
-                <div class="content-box">
-                    <h3>Three Common Strategy Traps</h3>
-                    <ul>
-                        <li><strong>Wrong Problem Trap:</strong> Solving the wrong issue brilliantly. Like prescribing headache medicine for a broken leg.</li>
-                        <li><strong>Resource Fantasy Trap:</strong> Trying to win at a game where you're hopelessly outmatched. Like challenging NBA players when you're five feet tall.</li>
-                        <li><strong>Self-Destruction Trap:</strong> The "solution" destroys what makes you valuable. Like a library competing with Netflix by getting rid of books.</li>
-                    </ul>
-                    <p>Your task: Spot these traps in strategies that seem reasonable.</p>
-                </div>
-            </div>
-
-            <div class="slide">
-                <h2>TechCorp Cloud</h2>
-                <div class="case-data">
-                    <h3>Context</h3>
-                    <p>TechCorp has 5% cloud market share vs AWS (45%), Azure (25%).</p>
-                    <p>Customer feedback: happy with support quality but consistently cite "limited features" and "poor performance" as reasons for leaving.</p>
-                    <p><strong>Their Strategy:</strong></p>
-                    <ul>
-                        <li><strong>Crux:</strong> "We're losing market share to competitors"</li>
-                        <li><strong>Policy:</strong> "Win through superior customer service"</li>
-                        <li><strong>Actions:</strong> Hire more support staff, launch 24/7 phone support, create dedicated account managers</li>
-                    </ul>
-                </div>
-                <div class="exercise-box">
-                    <h3>Find the Fatal Flaw (7 min)</h3>
-                    <p>This strategy sounds reasonable. What will make it fail?</p>
-                    <p>Which trap does it fall into?</p>
-                </div>
-                <button onclick="toggleReveal(this)" class="secondary-button">Reveal Flaw</button>
-                <div class="reveal-content">
-                    <div class="warning-box">
-                        <h3>Fatal Flaw: Wrong Problem Trap</h3>
-                        <p>The crux is wrong. Customers aren't leaving because of service - they're leaving because of features and performance.</p>
-                        <p><strong>Great service on a bad product = helping customers discover the flaws faster.</strong></p>
-                        <p>The real crux: "Our product fundamentally can't compete on capabilities that matter to customers."</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="slide">
-                <h2>LuxuryWatch</h2>
-                <div class="case-data">
-                    <h3>Context</h3>
-                    <p>Premium watch brand. $10K-50K price range. Current customers are 55+.</p>
-                    <p>Focus groups with younger consumers: "old-fashioned," "my grandfather's watch," "not relevant to my life."</p>
-                    <p><strong>Their Strategy:</strong></p>
-                    <ul>
-                        <li><strong>Crux:</strong> "Young people don't buy our watches"</li>
-                        <li><strong>Policy:</strong> "Become digitally native luxury brand"</li>
-                        <li><strong>Actions:</strong> Launch NFT collection, create TikTok presence, sponsor gaming tournaments, develop smartwatch line</li>
-                    </ul>
-                </div>
-                <div class="exercise-box">
-                    <h3>Find the Fatal Flaw (7 min)</h3>
-                    <p>What's wrong with this strategy?</p>
-                    <p>Which trap does it fall into?</p>
-                </div>
-                <button onclick="toggleReveal(this)" class="secondary-button">Reveal Flaw</button>
-                <div class="reveal-content">
-                    <div class="warning-box">
-                        <h3>Fatal Flaw: Self-Destruction Trap</h3>
-                        <p>The strategy destroys the brand's essence. Luxury = exclusive + timeless + craft heritage.</p>
-                        <p>NFTs, TikTok, and gaming make the brand trendy, not timeless. Mass digital presence destroys exclusivity.</p>
-                        <p><strong>What wealthy young buyers actually want: sustainability credentials + authentic craft stories + heritage with purpose.</strong></p>
-                        <p>The policy attacks the brand's core value instead of leveraging it.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="slide">
-                <h2>RegionalBank</h2>
-                <div class="case-data">
-                    <h3>Context</h3>
-                    <p>Regional bank with 50 branches. Annual tech budget: $10M. Competing against FinTech startups that spend $500M+ on technology.</p>
-                    <p>Customer data: 70% of customers live within 5 miles of a branch and value in-person relationships.</p>
-                    <p><strong>Their Strategy:</strong></p>
-                    <ul>
-                        <li><strong>Crux:</strong> "FinTech companies are stealing our customers with better apps"</li>
-                        <li><strong>Policy:</strong> "Achieve digital parity with FinTechs"</li>
-                        <li><strong>Actions:</strong> Build new mobile app, migrate to cloud, implement AI chatbot, add cryptocurrency trading</li>
-                    </ul>
-                </div>
-                <div class="exercise-box">
-                    <h3>Find the Fatal Flaw (7 min)</h3>
-                    <p>Why won't this work?</p>
-                    <p>Which trap does it fall into?</p>
-                </div>
-                <button onclick="toggleReveal(this)" class="secondary-button">Reveal Flaw</button>
-                <div class="reveal-content">
-                    <div class="warning-box">
-                        <h3>Fatal Flaw: Resource Fantasy Trap</h3>
-                        <p>50:1 spending disadvantage makes "digital parity" impossible. They'll always be years behind.</p>
-                        <p><strong>The strategy ignores their real strength: 50 physical branches where customers actually live.</strong></p>
-                        <p>Better crux: "FinTechs can't provide local, in-person financial guidance that our aging demographic values."</p>
-                        <p>Better policy: "Use branches for complex services FinTechs can't replicate - estate planning, business banking, mortgage counseling."</p>
-                    </div>
-                    <div class="expert-opinion">
-                        <p><strong>Lesson:</strong> Bad strategy attacks where you're weak, not where you're strong. Good strategy exploits asymmetry.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="slide">
-                <h2>Team Reflection</h2>
-                <div class="exercise-box">
-                    <h3>Discuss Together (5 min)</h3>
-                    <ol>
-                        <li><strong>How is strategy different from what you thought?</strong> (Goals? Vision? Planning?)</li>
-                        <li><strong>What bad strategy habits does your organization have?</strong> (Starting with goals? Avoiding hard truths? Creating wish lists?)</li>
-                    </ol>
-                </div>
-                <div class="highlight-box">
-                    <h3>Closing Wisdom</h3>
-                    <p>The strategy kernel - diagnosis, guiding policy, and coherent action - is simple to describe but hard to do.</p>
-                    <p>Most organizations prefer the comfort of setting ambitious goals to the discomfort of facing their real challenges.</p>
-                    <p><strong>Your job: Find the courage to face the truth about your crux.</strong></p>
-                </div>
-                <div class="content-box">
-                    <h3>Apply These Guidelines</h3>
-                    <ul>
-                        <li>Start with diagnosis, not goals</li>
-                        <li>Find the crux that unlocks progress</li>
-                        <li>Design policies that create advantage</li>
-                        <li>Build actions that reinforce each other</li>
-                    </ul>
-                </div>
-            </div>
-        </main>
-
-        <footer>
-            <button id="prev-btn" onclick="previousSlide()" disabled>Previous</button>
-            <button id="next-btn" onclick="nextSlide()">Next</button>
-        </footer>
+import React, { useState } from 'react';
+import { ChevronLeft, Briefcase, Code, Headphones, DollarSign, Settings, Scale, Users, TrendingUp, BarChart3, Target, UserCheck } from 'lucide-react';
+
+const StrategySafari = () => {
+  const [currentView, setCurrentView] = useState('home');
+  const [selectedFunction, setSelectedFunction] = useState(null);
+  const [selectedLevel, setSelectedLevel] = useState(null);
+
+  const functions = [
+    { id: 'product', name: 'Product', icon: Briefcase },
+    { id: 'engineering', name: 'Engineering', icon: Code },
+    { id: 'support', name: 'Support', icon: Headphones },
+    { id: 'finance', name: 'Finance', icon: DollarSign },
+    { id: 'operations', name: 'Operations', icon: Settings },
+    { id: 'legal', name: 'Legal', icon: Scale },
+    { id: 'hr', name: 'HR', icon: Users },
+    { id: 'sales', name: 'Sales', icon: TrendingUp },
+    { id: 'marketing', name: 'Marketing', icon: BarChart3 },
+    { id: 'data', name: 'Data', icon: Target },
+    { id: 'customer-success', name: 'Success', icon: UserCheck }
+  ];
+
+  const strategicKernels = {
+    product: {
+      vp: {
+        title: "Feature Velocity Paradox",
+        problem: "Product teams are caught in a self-defeating cycle where increasing feature velocity actually decreases user adoption of new features. Data shows that while the company ships 40% more features per quarter than two years ago, feature adoption rates have dropped by 25%. The product roadmap looks impressive, but users are overwhelmed and disengaged.",
+        diagnosis: "This isn't about prioritization—it's because rapid feature releases are creating cognitive overload for users who can't discover, learn, or integrate new capabilities before the next wave arrives. The product team celebrates each launch, but users have stopped paying attention. We're optimizing for internal productivity metrics (features shipped) rather than user outcome metrics (features actually used to create value). The real problem: we've created a feature factory that produces inventory nobody wants.",
+        crux: "The gap between feature release velocity and user learning velocity is widening, making most new development invisible to users.",
+        guidingPolicy: "Shift from 'feature velocity' to 'adoption velocity'—synchronize feature development cycles with user learning capacity rather than engineering capacity.",
+        actions: [
+          "Institute 6-week 'adoption sprints' between major feature releases where no new features ship, only education and optimization",
+          "Create in-product 'feature graduation' system where new capabilities start in a discovery lab before moving to main interface",
+          "Implement usage-triggered feature reveals that only show new capabilities when users have mastered prerequisite skills",
+          "Establish 'adoption debt' tracking—no new features in a product area until previous features hit 30% active user adoption",
+          "Deploy user learning velocity analytics to measure how quickly different user segments can absorb new capabilities"
+        ]
+      },
+      director: {
+        title: "Integration Tax Crisis",
+        problem: "Sarah, Director of Product Platform, manages the API ecosystem that powers 2,000+ third-party integrations. Despite adding 50 new API endpoints last quarter, partner satisfaction dropped 15% and integration failures increased by 40%. Partners complain it takes 3x longer to build integrations than with competitors.",
+        diagnosis: "The root cause isn't technical—it's strategic misalignment. Each product team optimizes their APIs for their specific use cases, creating a fragmented ecosystem where partners need to understand 12 different authentication methods and 8 data formats. Documentation exists for each API but no coherent story connects them. Partners spend more time reverse-engineering our architecture than building features. The crux: treating APIs as technical interfaces rather than products that need coherent user experience design.",
+        crux: "Every new API endpoint added without considering the partner developer experience increases the 'integration tax' partners pay to work with the platform.",
+        guidingPolicy: "Design APIs as a unified product experience, not as a collection of technical interfaces.",
+        actions: [
+          "Create 'API Design System'—standardized patterns for authentication, error handling, and data formats across all endpoints",
+          "Implement 'Partner Journey Mapping' to understand how developers actually chain API calls together in real integrations",
+          "Launch 'Integration Health Score' that measures partner success metrics, not just API uptime and response times",
+          "Establish 'API Council' with veto power over new endpoints that don't follow platform-wide standards",
+          "Build 'Partner Success Toolkit' with pre-built integration templates for the most common use cases"
+        ]
+      }
+    },
+    engineering: {
+      vp: {
+        title: "Technical Debt Compound Interest",
+        problem: "VP of Engineering oversees 200 engineers across 15 teams. Despite allocating 20% of capacity to technical debt reduction, system complexity continues to increase, deployment times are up 300%, and senior engineers spend 60% of their time explaining legacy code to others. The board questions why velocity keeps dropping despite hiring more engineers.",
+        diagnosis: "The organization treats technical debt as a monolithic problem rather than recognizing different types require different strategies. Some debt compounds exponentially (architectural decisions that affect every new feature), some stays constant (outdated libraries that just need updating), and some actually decreases over time (deprecated features fewer users touch). The current approach treats all debt equally, leading to effort spent on low-impact improvements while architectural problems metastasize. Teams celebrate refactoring old code while the foundation rots.",
+        crux: "Without distinguishing between different types of technical debt and their growth patterns, efforts to reduce it become a Sisyphean task where progress in one area is offset by deterioration in another.",
+        guidingPolicy: "Implement a technical debt taxonomy that prioritizes based on compound rate rather than current pain level.",
+        actions: [
+          "Create 'Debt Growth Model' categorizing all technical debt by its compound rate (architectural > integration > implementation)",
+          "Institute 'Architecture Review Board' with power to halt features that would add high-compound debt to the system",
+          "Launch 'Refactoring Raids'—focused 2-week sprints where entire teams attack single architectural debt issues together",
+          "Establish 'Complexity Budget'—new features must remove as much complexity as they add, measured in specific metrics",
+          "Deploy 'Time Travel Metrics' showing how long common tasks take now vs. 1 year ago to make debt impact visible"
+        ]
+      },
+      director: {
+        title: "Mobile Review Catastrophe",
+        problem: "David, Director of Mobile Engineering, watches his team's iOS app rating plummet to 2.3 stars. But here's the twist: crash rates are at an all-time low (0.02%), and feature completion is up 40%. The negative reviews all say versions of 'app doesn't work' but don't specify what's broken. His team is demoralized, working harder than ever but users hate them.",
+        diagnosis: "Digging deeper, David discovers 87% of 1-star reviews come from users who've been using the app for 2+ years. The app works fine—but it's solving 2019 problems for 2024 users. These long-time users remember when the mobile app was a simple companion to desktop, but now expect full parity. Meanwhile, new users expect it to work like TikTok or Instagram—intuitive, fast, visual. The team is maintaining perfectly functioning code that no longer matches how people actually want to work on mobile.",
+        crux: "Long-time users expect the mobile app to do everything desktop does. New users expect it to work like TikTok. The team is caught trying to serve both masters.",
+        guidingPolicy: "Stop trying to port desktop to mobile. Make mobile its own simpler, focused experience that does 3 things brilliantly.",
+        actions: [
+          "Launch 'Mobile MVP'—strip app to just: edit text, change images, view analytics (the 80% use case)",
+          "Create 'Desktop Handoff'—for complex edits, app sends notification to desktop with deep link to exact location",
+          "Build 'Quick Win Library'—50 one-tap edits that make sites look instantly better without complexity",
+          "Implement '5-Minute Friday'—whole team uses only mobile app every Friday, documenting pain points firsthand",
+          "Add 'Expectation Setter'—first-launch screen showing 'Mobile is for quick edits. Big changes? Use desktop'"
+        ]
+      }
+    },
+    support: {
+      vp: {
+        title: "Support Scalability Mirage",
+        problem: "VP of Support manages 500 agents globally, but despite hiring 100 new agents last quarter, average response time increased from 2 hours to 4 hours. Customer satisfaction is dropping while cost per ticket is rising 15% month-over-month. The board wants to know why throwing people at the problem isn't working.",
+        diagnosis: "The linear scaling assumption (more agents = better support) ignores the exponential complexity of coordination. Each new agent adds communication overhead, requires training from experienced staff, and initially handles only simple tickets. Meanwhile, product complexity grows faster than agent expertise—what took 5 minutes to resolve last year now takes 20 minutes due to feature interactions. The best agents get pulled into training, reducing effective capacity. The real issue: treating support as a people problem rather than a knowledge management problem.",
+        crux: "Adding agents without solving the knowledge distribution problem creates more coordination cost than capacity benefit.",
+        guidingPolicy: "Transform from a service delivery model to a knowledge leverage model—make every agent as effective as your best agent.",
+        actions: [
+          "Build 'Knowledge Graph System' that automatically surfaces relevant past solutions based on ticket content patterns",
+          "Create 'Expertise Marketplace' where agents can quickly consult specialists without formal escalation processes",
+          "Implement 'Solution Confidence Scoring'—agents rate their confidence, triggering automatic peer review for low scores",
+          "Launch 'Swarm Support Model'—complex tickets addressed by temporary expert teams rather than escalation chains",
+          "Deploy 'Learning Loops'—every resolved ticket automatically generates training content for similar future issues"
+        ]
+      },
+      director: {
+        title: "Support Content Ticket Tsunami",
+        problem: "Maria, Director of Help Center Content, manages a team creating support articles, but ticket volume keeps rising. Her team of 6 writers produces 50 new articles monthly, yet support tickets about 'How do I...' increased 30% this quarter. The VP of Support wants answers, and Maria's data shows users visit help articles—they just don't help.",
+        diagnosis: "Analytics show users spend average 6 seconds on help articles before opening tickets anyway. Deeper analysis reveals the pattern: users arrive in crisis mode ('my website is down!') but find documentation written for learning mode ('Understanding DNS propagation'). Articles are technically accurate but emotionally tone-deaf. The real issue: articles are written like technical documentation ('To configure your DNS settings...') while users search in panic mode ('website disappeared help'). Writers are measured on article quantity and 'accuracy scores' from legal/technical review. No one measures if articles actually prevent tickets.",
+        crux: "Writers are measured on article quantity and 'accuracy scores' from legal/technical review. No one measures if articles actually prevent tickets.",
+        guidingPolicy: "Stop writing documentation. Start writing emergency medicine—assume every reader is in crisis mode.",
+        actions: [
+          "Create 'Panic Mode Templates'—every article starts with 'If you need this fixed NOW, skip to Quick Fix section'",
+          "Implement 'Screenshot > Words' rule—minimum 1 annotated screenshot per 50 words of text",
+          "Launch 'Fix It Button'—embedded widget that auto-implements the solution described in the article",
+          "Build 'Article 911'—track which articles users rage-quit from and rewrite those first with user testing",
+          "Establish 'Support Shadow Day'—every writer listens to 4 hours of support calls monthly to hear real panic"
+        ]
+      }
+    },
+    finance: {
+      vp: {
+        title: "Budget Accuracy Paradox",
+        problem: "VP of Finance oversees annual budgeting process that takes 3 months, involves 200+ stakeholders, and produces forecasts with 40% variance from actuals. Despite implementing sophisticated forecasting tools and hiring McKinsey consultants, accuracy hasn't improved in 5 years. The board loses confidence with each missed forecast.",
+        diagnosis: "The budgeting process optimizes for precision over accuracy. Teams spend weeks negotiating decimal points on estimates that are fundamentally uncertain. Finance demands detailed justifications for every line item, creating false confidence through exhaustive documentation. The real problem: treating dynamic business planning as a static annual exercise. Markets change monthly, customer behavior shifts quarterly, but budgets change annually, creating a growing gap between financial plans and business reality. The more detailed the budget, the more precisely wrong it becomes.",
+        crux: "The more detailed the budget, the more precisely wrong it becomes—yet organizational culture demands detailed budgets as a proxy for rigor.",
+        guidingPolicy: "Replace annual precision theater with continuous range-based planning that embraces uncertainty.",
+        actions: [
+          "Implement 'Rolling Range Forecasts'—quarterly updates with confidence intervals instead of annual point estimates",
+          "Create 'Trigger-Based Budgets' that automatically adjust when key assumptions change (user growth, market conditions)",
+          "Launch 'Budget Variance Attribution' system showing whether misses were from bad estimates or changed conditions",
+          "Establish 'Strategic Reserve Pools'—20% of budget unallocated initially, deployed based on real opportunities",
+          "Deploy 'Planning Poker' where teams estimate ranges and discuss outliers rather than negotiate middle points"
+        ]
+      },
+      director: {
+        title: "Revenue Recognition Nightmare",
+        problem: "Director of Revenue Operations manages a team processing $50M in monthly transactions, but month-end close takes 15 days and requires 60 manual adjustments. Auditors flag new issues quarterly despite the team working 60-hour weeks during close. The CFO is threatening to outsource the entire function.",
+        diagnosis: "The root cause isn't accounting complexity—it's system fragmentation. Sales uses Salesforce, billing uses Zuora, and revenue recognition uses NetSuite. Each system has different data models, creating reconciliation nightmares. Manual processes evolved to bridge gaps, but these band-aids now consume more effort than the core work. Every new product launch adds exponential complexity because each system interprets the product differently. The team became experts at working around bad architecture rather than fixing it.",
+        crux: "Every new product launch adds exponential complexity to revenue recognition because systems weren't designed to talk to each other.",
+        guidingPolicy: "Build revenue operations around data flow architecture, not functional silos.",
+        actions: [
+          "Create 'Single Source of Truth' data model that all systems must conform to or translate through APIs",
+          "Implement 'Contract Lifecycle Tracking' from sales quote through revenue recognition in unified system",
+          "Launch 'Automated Reconciliation Suite' that flags discrepancies in real-time, not at month-end",
+          "Build 'Revenue Rule Engine' where business logic lives in one place, not scattered across systems",
+          "Establish 'Close Countdown Dashboard'—real-time visibility into what's blocking the close process"
+        ]
+      }
+    },
+    operations: {
+      vp: {
+        title: "Efficiency-Resilience Trade-off",
+        problem: "VP of Operations achieved 99.5% efficiency in supply chain operations through just-in-time optimization, but a single supplier hiccup last quarter cost $10M in lost revenue. The board wants both maximum efficiency and bulletproof resilience—two goals that seem mutually exclusive. Competitors somehow manage both.",
+        diagnosis: "Years of optimization removed all slack from the system. What looks like waste (buffer inventory, redundant suppliers, excess capacity) is actually insurance against disruption. The organization optimized for normal conditions but became fragile to abnormal ones—and abnormal is becoming more normal. Six Sigma drove out variability but also flexibility. Every percentage point of efficiency gained by removing buffers increases disruption risk exponentially. The real issue: efficiency and resilience aren't opposites—they require different time horizons for measurement.",
+        crux: "Every percentage point of efficiency gained by removing buffers increases disruption risk exponentially, but this trade-off is invisible until disaster strikes.",
+        guidingPolicy: "Design for 'efficient resilience'—maintain optimization while building selective redundancy at critical failure points.",
+        actions: [
+          "Implement 'Criticality Mapping' identifying single points of failure across all operations with risk scores",
+          "Create 'Smart Buffer Strategy'—hold inventory only for high-impact, hard-to-replace components",
+          "Launch 'Supplier Health Monitoring' with early warning system for financial/operational risks",
+          "Build 'Rapid Response Playbooks' for top 10 disruption scenarios with pre-negotiated alternatives",
+          "Deploy 'Antifragility Metrics' that reward teams for systems that get stronger under stress"
+        ]
+      },
+      director: {
+        title: "Warehouse Automation Plateau",
+        problem: "Director of Fulfillment Operations manages 5 warehouses with 70% automation, but productivity gains have stalled. Adding more robots increased complexity without improving throughput. Workers spend more time managing automation than fulfilling orders. The COO questions the $20M automation investment.",
+        diagnosis: "The automation strategy focused on replacing human tasks rather than reimagining the work. Result: robots optimized for human-designed processes that don't suit robots. Humans handle exceptions, robots handle routine, but every handoff creates friction. The warehouse layout still follows human walking patterns, not robot efficiency. Meanwhile, humans do tasks robots can't handle, creating bottlenecks at every human-robot handoff. The crux: partial automation often performs worse than full manual or full automated systems.",
+        crux: "The warehouse is caught between two operating models—neither fully manual nor fully automated—creating the inefficiencies of both.",
+        guidingPolicy: "Design end-to-end flows optimized for either humans or robots, not awkward hybrid compromises.",
+        actions: [
+          "Create 'Flow Segmentation'—separate SKUs into fully-automated vs fully-manual paths based on characteristics",
+          "Implement 'Human Advantage Zones' where people excel (exception handling, quality inspection, complex packing)",
+          "Launch 'Robot Highway System'—redesign warehouse layout for robot efficiency, not human walking paths",
+          "Build 'Automation ROI Reality Check'—measure true productivity including maintenance and exception handling",
+          "Establish 'Future State Roadmap' showing clear path to coherent operating model, not piecemeal automation"
+        ]
+      }
+    },
+    legal: {
+      vp: {
+        title: "Compliance Velocity Blocker",
+        problem: "VP of Legal oversees contract reviews that take average 2 weeks, becoming the bottleneck for sales deals worth $100M pipeline. Sales complains legal kills deals with excessive redlines, while legal argues sales makes impossible promises that expose the company to litigation. Board pressure intensifies every quarter-end as deals slip.",
+        diagnosis: "Legal operates as quality control at the end of the process rather than guardrails throughout. Sales negotiates terms for weeks, building customer expectations, then legal must either accept unacceptable risk or blow up deals at the 11th hour. This serial process creates false trade-offs between speed and safety. Legal becomes the 'Department of No' because they're brought in too late to say yes. The real issue: legal expertise is concentrated in the review phase rather than distributed throughout the deal process.",
+        crux: "The more successful sales becomes at creating opportunities, the more legal becomes a bottleneck—success creates its own failure mode.",
+        guidingPolicy: "Transform legal from gatekeepers to enablers by embedding legal intelligence throughout the business process.",
+        actions: [
+          "Create 'Pre-Approved Terms Library' where 80% of deals can close without legal review if within parameters",
+          "Implement 'Legal Velocity Metrics' tracking business impact of review times, not just risk mitigation scores",
+          "Launch 'Deal Design Partnership' where legal joins strategic deals from first customer meeting",
+          "Build 'Smart Contract Platform' with automated risk scoring and conditional approval workflows",
+          "Deploy 'Sales Legal Certification' program where AEs can self-serve common negotiations"
+        ]
+      },
+      director: {
+        title: "Privacy Regulation Whack-a-Mole",
+        problem: "Director of Privacy manages compliance across 50 countries with 15 different privacy regimes. Each quarter brings new regulations, requiring emergency scrambles that disrupt product roadmaps. The team is always reactive, never proactive. Engineering hates the constant fire drills.",
+        diagnosis: "The organization treats each regulation as a unique compliance exercise rather than recognizing patterns. GDPR, CCPA, LGPD and others share 70% common requirements, but the company implements bespoke solutions for each. This multiplies work and creates inconsistent user experiences—European users have different privacy controls than Brazilian users for no good reason. Every solution is the minimum viable compliance, guaranteeing maximum future work. The crux: optimizing for minimum compliance rather than maximum user control.",
+        crux: "Chasing regulatory minimums means every new law requires new work, creating an endless compliance treadmill.",
+        guidingPolicy: "Build privacy infrastructure that exceeds all current regulations, making new ones trivial to accommodate.",
+        actions: [
+          "Implement 'Universal Privacy Framework' supporting strictest global requirements as baseline everywhere",
+          "Create 'Privacy Control Center' giving users maximum control regardless of their jurisdiction",
+          "Launch 'Regulation Pattern Library' mapping common requirements across all privacy laws",
+          "Build 'Privacy-by-Design Toolkit' embedding compliance into product development process",
+          "Establish 'Future-Proof Privacy' team that monitors proposed regulations and builds ahead of requirements"
+        ]
+      }
+    },
+    hr: {
+      vp: {
+        title: "Talent Density Dilution",
+        problem: "VP of People oversees 500% headcount growth in 2 years, but employee engagement dropped from 85% to 60%. Despite hiring from Google, Meta, and top universities, new hires take 9 months to become productive, and key talent is leaving for startups. Cultural cohesion is fragmenting into departmental silos.",
+        diagnosis: "Rapid scaling broke the informal knowledge transfer and culture transmission mechanisms that worked at smaller scale. When the company was 200 people, culture spread through proximity and osmosis. At 1,000 people, new hires can go weeks without meaningful interaction with culture carriers. The hiring process optimizes for individual excellence (perfect resume, tough interviews) but ignores team integration. Great people are joining but not becoming part of the organism. The real problem: treating culture as something that scales automatically rather than something requiring intentional systems.",
+        crux: "Every new hire dilutes cultural density unless active measures counter entropy—and current onboarding adds people without adding culture.",
+        guidingPolicy: "Design scaling systems that increase rather than decrease cultural density as the organization grows.",
+        actions: [
+          "Create 'Culture Amplification Program' where every employee must teach company values to others quarterly",
+          "Implement 'Team Integration Score' measuring not individual performance but speed to team productivity",
+          "Launch 'Reverse Mentoring' where new hires are paired with culture champions from day one",
+          "Build 'Stories That Scale' system capturing and spreading examples of culture in action across teams",
+          "Deploy 'Network Density Analytics' measuring internal connection strength and intervening when silos form"
+        ]
+      },
+      director: {
+        title: "Remote Work Productivity Paradox",
+        problem: "Director of People Operations finds that remote workers show 20% higher individual productivity metrics but team innovation metrics dropped 35%. Collaboration tools proliferate—Slack, Zoom, Miro, Notion—but real collaboration decreases. Teams efficiently execute their roadmaps but no breakthrough ideas emerge.",
+        diagnosis: "Remote work optimized for focused individual execution but eliminated serendipitous interactions that spark innovation. The coffee machine conversations, hallway encounters, and lunch debates disappeared. Digital collaboration tools facilitate planned meetings but not unexpected conversations. Those 'waste of time' interactions were actually where cross-pollination happened. The crux: measuring productivity by output rather than outcomes led to optimizing the wrong things. We got really good at doing the work we planned, but stopped discovering work we didn't know we needed.",
+        crux: "Remote work structures excel at executing known tasks but fail at discovering unknown opportunities.",
+        guidingPolicy: "Design remote work systems that deliberately create collision spaces for unexpected interactions.",
+        actions: [
+          "Launch 'Random Coffee Chats' algorithm that pairs people from different teams weekly for 30-min calls",
+          "Create 'Virtual Water Cooler' sessions—scheduled unstructured time for teams to talk about anything",
+          "Implement 'Innovation Fridays' where teams work on anything except their official roadmap",
+          "Build 'Serendipity Metrics' tracking cross-team collaboration and idea generation patterns",
+          "Establish 'Hybrid Innovation Sprints' bringing remote teams together quarterly for creative work"
+        ]
+      }
+    },
+    sales: {
+      vp: {
+        title: "Enterprise Deal Complexity Trap",
+        problem: "VP of Sales sees average deal size increase 300% but sales cycle lengthened from 3 to 9 months. Win rate dropped from 35% to 15%. The enterprise sales team burns through quota capacity chasing mega-deals that rarely close. Board celebrates when a Fortune 500 logo is in pipeline but grimaces when it dies after 8 months.",
+        diagnosis: "The organization conflates deal size with deal quality. Large enterprises demand customizations that break the product model, turning software sales into consulting projects. Sales promises custom features, professional services wrap their arms around it, but delivery becomes a nightmare. These 'strategic' deals consume 80% of resources while generating 20% of revenue—and that revenue is barely profitable after customization costs. Sales comp plans reward big deals regardless of profitability. The real issue: the sales strategy optimizes for logo prestige rather than sustainable revenue growth.",
+        crux: "The most impressive deals to win are the worst deals to deliver—success in selling creates failure in scaling.",
+        guidingPolicy: "Focus on the 'profitable middle'—deals large enough to matter but standard enough to scale.",
+        actions: [
+          "Define 'Strike Zone' of ideal customer profile based on profitability, not just revenue size",
+          "Create 'Customization Budget' where deals requiring >20% custom work get killed early in process",
+          "Implement 'Deal Score Algorithm' weighting time-to-close and service cost, not just contract value",
+          "Launch 'Fast Track Program' for standard deals with 30-day close guarantee and preferential comp",
+          "Build 'Strategic Account Filter' requiring C-level approval for pursuits outside the strike zone"
+        ]
+      },
+      director: {
+        title: "SDR Burnout Machine",
+        problem: "Director of Sales Development watches monthly SDR turnover hit 15%. The team makes 100 calls daily but books fewer meetings than 2 years ago when they made 50 calls. Top performers leave after 6 months, taking their knowledge with them. LinkedIn is full of ex-SDRs warning others away from the company.",
+        diagnosis: "The SDR role optimized for activity metrics (calls, emails) rather than meaningful conversations. Prospects are oversaturated with outreach, response rates plummet, so management's answer is to increase volume targets. This creates a death spiral where SDRs become spam machines rather than sales professionals. Quality drops, requiring more quantity, dropping quality further. New SDRs see veterans grinding through rejection all day and start planning their exit immediately. The crux: the job design makes success impossible—even perfect execution yields poor results.",
+        crux: "The more activity required to hit targets, the lower quality each activity becomes, requiring even more activity.",
+        guidingPolicy: "Transform SDRs from volume operators to value creators by prioritizing conversation quality over quantity.",
+        actions: [
+          "Implement 'Quality Score' where one great conversation counts more than 20 cold calls in comp",
+          "Create 'Research Time Budget'—2 hours daily for understanding prospects before any outreach",
+          "Launch 'Warm Introduction Program' leveraging network connections over cold outreach",
+          "Build 'SDR Career Path' showing clear progression beyond just hitting numbers to keep talent",
+          "Deploy 'Conversation Intelligence' tools helping SDRs improve talk tracks based on what works"
+        ]
+      }
+    },
+    marketing: {
+      vp: {
+        title: "Attribution Illusion",
+        problem: "VP of Marketing commands $50M budget across 15 channels, but multi-touch attribution shows wildly different results from last-click attribution. Channel teams fight over credit while overall CAC rises 40% year-over-year. Board questions marketing ROI at every meeting. The paid search team claims they drive 60% of revenue, content team says they do, sales says marketing contributes nothing.",
+        diagnosis: "Marketing suffers from measurement-driven strategic distortion. The team has become expert at optimizing individual channel metrics, but this optimization actually cannibalizes overall customer acquisition effectiveness. Attribution analysis reveals channels appearing 'inefficient' in isolation are actually crucial for conversions that other channels get credit for. The blog post that gets no conversions primes users for the paid ad that does. Current attribution model incentivizes channel teams to compete against each other rather than collaborate, leading to suboptimal overall performance despite excellent individual channel metrics.",
+        crux: "The measurement system drives channel strategies that optimize local metrics while degrading global outcomes.",
+        guidingPolicy: "Design channel strategy around customer journey orchestration rather than channel performance optimization—treat channels as instruments in an ensemble rather than solo performers.",
+        actions: [
+          "Implement 'journey contribution scoring' measuring each channel's role in complete customer conversion paths",
+          "Create cross-channel teams responsible for specific customer journey segments rather than individual channels",
+          "Deploy budget allocation based on journey value contribution rather than last-click attribution",
+          "Establish 'channel cooperation incentives' where teams are rewarded for contributions to other channels' apparent success",
+          "Build customer journey simulation modeling to test channel mix changes before implementing them"
+        ]
+      },
+      director: {
+        title: "Content Marketing Volume Trap",
+        problem: "Director of Content Marketing publishes 200 pieces monthly but organic traffic declined 25% year-over-year. The team produces more content than ever, yet engagement metrics worsen. SEO rankings drop despite following all best practices. The CMO wants explanations for why 'more' isn't working.",
+        diagnosis: "Content strategy fell into the 'more is better' trap. While volume increased, quality and differentiation decreased. Every piece follows SEO templates, making content indistinguishable from competitors—everyone writes '10 ways to...' articles about the same topics. Google's algorithms evolved to reward expertise and unique insights over keyword optimization. The content calendar is full but the content is empty. AI-written articles flood the market, making human-but-generic content worthless. The crux: optimizing for search engines rather than human readers creates content that neither audience values.",
+        crux: "Content created to game algorithms eventually gets beaten by algorithms—sustainable growth requires serving readers, not robots.",
+        guidingPolicy: "Shift from content factory to thought leadership—publish less but say more.",
+        actions: [
+          "Launch 'Expert Interview Series' featuring non-obvious insights from industry practitioners",
+          "Implement '10x Content Standard'—only publish if it's 10x better than existing content on topic",
+          "Create 'Original Research Program' generating proprietary data and insights competitors can't copy",
+          "Build 'Content Differentiation Score' measuring uniqueness versus competitive content",
+          "Establish 'Reader Success Metrics' tracking whether content helped users achieve their goals"
+        ]
+      }
+    },
+    data: {
+      vp: {
+        title: "Analytics Democratization Disaster",
+        problem: "VP of Data Analytics celebrated giving 1,000 employees dashboard access, but now faces chaos: conflicting metrics in executive meetings, 50 definitions of 'active user', and shadow analytics everywhere. Last week's board meeting featured three different revenue numbers from three different dashboards. Data 'democratization' created anarchy.",
+        diagnosis: "The organization confused data access with data literacy. Giving everyone Tableau licenses without governance, training, or standards created more confusion than clarity. Each team interprets data through their own lens, creating alternate realities—marketing counts trial users as 'active', product requires daily logins, sales counts anyone who ever logged in. Well-meaning employees create dashboards that look professional but contain fundamental errors. Everyone has opinions backed by 'data' but the data says different things. The real problem: treating analytics as a technical challenge rather than an organizational capability.",
+        crux: "Democratizing data without democratizing understanding multiplies confusion rather than insights.",
+        guidingPolicy: "Build data literacy infrastructure alongside data access infrastructure.",
+        actions: [
+          "Create 'Metrics Dictionary' with single source of truth for all key business definitions",
+          "Launch 'Data Interpreter Certification' program before granting dashboard creation rights",
+          "Implement 'Metric Lineage Tracking' showing how every number is calculated from source data",
+          "Build 'Analytics Center of Excellence' providing templates and best practices for common analyses",
+          "Deploy 'Insight Review Board' validating critical analyses before executive presentation"
+        ]
+      },
+      director: {
+        title: "Real-Time Dashboard Delusion",
+        problem: "Director of Business Intelligence built real-time dashboards updating every minute, but executives still make decisions on gut feel. Despite $2M investment in visualization tools, adoption hovers at 30%. The dashboards are technical marvels that nobody uses. The CEO still asks for Excel exports.",
+        diagnosis: "The team optimized for data freshness rather than decision relevance. Real-time updates create noise for metrics that matter monthly. Executives are bombarded with constantly changing numbers that prevent pattern recognition. Beautiful visualizations hide that the underlying questions are wrong—knowing revenue per second doesn't help quarterly planning. The dashboard shows what's technically possible (real-time everything) rather than what's strategically useful (the right metrics at the right cadence). The crux: building what's technically impressive rather than what drives better decisions.",
+        crux: "The more real-time the dashboard, the less strategic the thinking—tactics drown out strategy in the noise.",
+        guidingPolicy: "Design analytics for decision velocity, not data velocity.",
+        actions: [
+          "Implement 'Decision Mapping' identifying what choices dashboards should actually influence",
+          "Create 'Metric Cadence Alignment'—match update frequency to decision frequency (daily/weekly/monthly)",
+          "Launch 'So What Test'—every metric must explain what action it should trigger at what threshold",
+          "Build 'Executive Analytics Concierge' translating data into recommended actions, not just charts",
+          "Establish 'Dashboard Retirement Program' killing unused reports to reduce noise and focus attention"
+        ]
+      }
+    },
+    'customer-success': {
+      vp: {
+        title: "Success Theater Problem",
+        problem: "VP of Customer Success manages 100 CSMs maintaining 'regular check-ins' with thousands of accounts, but churn increased 20% while team claims all customers are 'green'. Every churned customer had a recent 'successful' QBR. Post-mortems reveal customers were planning to leave during the very calls where CSMs reported 'strong relationships'.",
+        diagnosis: "Customer Success optimized for activity metrics (calls, emails, QBRs) rather than actual customer outcomes. CSMs perform 'success theater'—going through motions without driving value. Quarterly business reviews became status updates about feature usage rather than strategic sessions about business impact. CSMs fear bringing up problems because their performance reviews penalize 'red' accounts. Check-in calls follow scripts that don't uncover real challenges. The real issue: measuring CSM performance by activities completed rather than customer results achieved.",
+        crux: "The more touchpoints required, the less meaningful each becomes—quantity metrics destroy quality interactions.",
+        guidingPolicy: "Transform from reactive check-ins to proactive value creation measured by customer outcomes.",
+        actions: [
+          "Implement 'Value Realization Tracking' measuring customer business metrics, not product usage",
+          "Create 'Outcome-Based CSM Compensation' tied to customer ROI, not activity metrics",
+          "Launch 'Strategic Business Reviews' replacing generic QBRs with custom business planning sessions",
+          "Build 'Early Warning System' using product telemetry to predict churn before CSMs notice",
+          "Deploy 'Customer Success Qualified Leads' where CSMs identify expansion based on value delivered"
+        ]
+      },
+      director: {
+        title: "Adoption Metrics Mirage",
+        problem: "Director of Customer Success reports 90% feature adoption rates, but NPS dropped 30 points. Customers use features but don't get value. The team celebrates vanity metrics while missing that customers achieve their goals less often than before. The dashboard is all green but customers are leaving.",
+        diagnosis: "The organization conflates feature usage with customer success. Adoption metrics show customers clicking buttons, not achieving outcomes. Heavy feature users often struggle most—they're trying everything because nothing quite works. The most successful customers often use the fewest features but use them expertly. Product complexity increased faster than customer sophistication. The team became expert at driving feature adoption through training and campaigns, but lost sight of why customers bought the product. The crux: optimizing for product engagement rather than customer progress creates sophisticated failure.",
+        crux: "High adoption without high value realization creates sophisticated failure rather than simple success.",
+        guidingPolicy: "Measure customer progress toward their goals, not their progress through our features.",
+        actions: [
+          "Define 'Customer Success Metrics' based on their business outcomes, not our feature usage",
+          "Create 'Complexity Scoring' identifying when feature adoption actually hurts customer success",
+          "Implement 'Outcome Mapping' connecting specific features to specific customer goals",
+          "Launch 'Success Path Analytics' showing fastest route to customer value, not complete adoption",
+          "Build 'Simplification Initiatives' removing features that correlate with lower success rates"
+        ]
+      }
+    }
+  };
+
+  const handleFunctionSelect = (funcId) => {
+    setSelectedFunction(funcId);
+    setCurrentView('level-select');
+  };
+
+  const handleLevelSelect = (level) => {
+    setSelectedLevel(level);
+    setCurrentView('kernel');
+  };
+
+  const handleBack = () => {
+    if (currentView === 'kernel') {
+      setCurrentView('level-select');
+      setSelectedLevel(null);
+    } else if (currentView === 'level-select') {
+      setCurrentView('home');
+      setSelectedFunction(null);
+    }
+  };
+
+  const renderHome = () => (
+    <div className="min-h-screen bg-[#F5F0E8]">
+      <section className="py-20 md:py-32 px-5 md:px-10">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-20">
+            <h1 className="text-5xl md:text-7xl font-black text-gray-900 tracking-tight mb-6">
+              Strategy Safari
+            </h1>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Navigate strategic kernels across every business function
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {functions.map((func, index) => {
+              const Icon = func.icon;
+              return (
+                <button
+                  key={func.id}
+                  onClick={() => handleFunctionSelect(func.id)}
+                  className="bg-white p-12 rounded-2xl hover:-translate-y-2 hover:shadow-xl transition-all duration-300 text-left"
+                >
+                  <div className="text-6xl font-black text-[#FFD60A] mb-4">
+                    {String(index + 1).padStart(2, '0')}
+                  </div>
+                  <div className="flex items-center gap-4 mb-4">
+                    <Icon size={32} className="text-[#003566]" />
+                    <h3 className="text-2xl font-bold text-gray-900">{func.name}</h3>
+                  </div>
+                  <p className="text-gray-600">
+                    Strategic challenges and solutions for {func.name.toLowerCase()} leaders
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
     </div>
+  );
 
-    <script>
-        let currentSlide = 1;
-        const totalSlides = 15;
-        let startTime = Date.now();
-        let timerInterval = null;
-
-        function updateSlideDisplay() {
-            const slides = document.querySelectorAll('.slide');
-            slides.forEach((slide, index) => {
-                slide.classList.toggle('active', index === currentSlide - 1);
-            });
-
-            document.getElementById('current-slide').textContent = currentSlide;
-            document.getElementById('progress').style.width = `${(currentSlide / totalSlides) * 100}%`;
-
-            document.getElementById('prev-btn').disabled = currentSlide === 1;
-            document.getElementById('next-btn').disabled = currentSlide === totalSlides;
-
-            document.getElementById('main-content').scrollTop = 0;
-        }
-
-        function updateTimer() {
-            const elapsed = Math.floor((Date.now() - startTime) / 1000);
-            const minutes = Math.floor(elapsed / 60);
-            const seconds = elapsed % 60;
-            const display = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            document.getElementById('timer').textContent = display;
-        }
-
-        function startGlobalTimer() {
-            updateTimer();
-            timerInterval = setInterval(updateTimer, 1000);
-        }
-
-        function nextSlide() {
-            if (currentSlide < totalSlides) {
-                currentSlide++;
-                updateSlideDisplay();
-            }
-        }
-
-        function previousSlide() {
-            if (currentSlide > 1) {
-                currentSlide--;
-                updateSlideDisplay();
-            }
-        }
-
-        function toggleReveal(button) {
-            const revealContent = button.nextElementSibling;
-            const isShowing = revealContent.classList.contains('show');
-            revealContent.classList.toggle('show');
-            button.textContent = isShowing ? button.textContent.replace('Hide', 'Reveal') : button.textContent.replace('Reveal', 'Hide');
+  const renderLevelSelect = () => (
+    <div className="min-h-screen bg-[#F5F0E8]">
+      <section className="py-20 md:py-32 px-5 md:px-10">
+        <div className="max-w-4xl mx-auto">
+          <button
+            onClick={handleBack}
+            className="mb-12 flex items-center text-gray-600 hover:text-gray-900 transition-colors group"
+          >
+            <ChevronLeft size={20} className="mr-2 group-hover:-translate-x-1 transition-transform" />
+            Back to Functions
+          </button>
+          
+          <h2 className="text-5xl md:text-6xl font-black text-gray-900 tracking-tight mb-16 text-center">
+            Select Your Level
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <button
+              onClick={() => handleLevelSelect('vp')}
+              className="bg-white p-12 rounded-2xl hover:-translate-y-2 hover:shadow-xl transition-all duration-300 text-left"
+            >
+              <div className="text-6xl font-black text-[#FFD60A] mb-4">VP</div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Executive Level</h3>
+              <p className="text-gray-600">System-wide strategic challenges that reshape entire functions</p>
+            </button>
             
-            if (!isShowing) {
-                setTimeout(() => {
-                    revealContent.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }, 100);
-            }
-        }
+            <button
+              onClick={() => handleLevelSelect('director')}
+              className="bg-white p-12 rounded-2xl hover:-translate-y-2 hover:shadow-xl transition-all duration-300 text-left"
+            >
+              <div className="text-6xl font-black text-[#003566] mb-4">DIR</div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Director Level</h3>
+              <p className="text-gray-600">Operational challenges that transform team performance</p>
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
 
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowRight' && currentSlide < totalSlides) nextSlide();
-            if (e.key === 'ArrowLeft' && currentSlide > 1) previousSlide();
-        });
+  const renderKernel = () => {
+    const kernel = strategicKernels[selectedFunction]?.[selectedLevel];
+    if (!kernel) return null;
 
-        updateSlideDisplay();
-        startGlobalTimer();
-    </script>
-</body>
-</html>
+    return (
+      <div className="min-h-screen bg-[#F5F0E8]">
+        <section className="py-20 md:py-32 px-5 md:px-10">
+          <div className="max-w-4xl mx-auto">
+            <button
+              onClick={handleBack}
+              className="mb-12 flex items-center text-gray-600 hover:text-gray-900 transition-colors group"
+            >
+              <ChevronLeft size={20} className="mr-2 group-hover:-translate-x-1 transition-transform" />
+              Back to Levels
+            </button>
+            
+            <div className="bg-white rounded-2xl p-8 md:p-12">
+              <div className="mb-8">
+                <span className="inline-block px-4 py-2 bg-[#FFD60A] text-gray-900 rounded-full text-sm font-bold uppercase tracking-wider mb-4">
+                  {functions.find(f => f.id === selectedFunction)?.name} • {selectedLevel === 'vp' ? 'VP' : 'Director'}
+                </span>
+                <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight leading-tight">
+                  {kernel.title}
+                </h2>
+              </div>
+              
+              <div className="space-y-8">
+                <div className="border-l-4 border-[#FFD60A] pl-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">The Problem</h3>
+                  <p className="text-gray-600 text-lg leading-relaxed">{kernel.problem}</p>
+                </div>
+                
+                <div className="border-l-4 border-gray-200 pl-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">Diagnosis</h3>
+                  <p className="text-gray-600 text-lg leading-relaxed">{kernel.diagnosis}</p>
+                </div>
+                
+                <div className="bg-[#FFD60A] bg-opacity-10 p-6 rounded-xl border-2 border-[#FFD60A]">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">The Crux</h3>
+                  <p className="text-gray-700 text-lg leading-relaxed font-medium">
+                    {kernel.crux}
+                  </p>
+                </div>
+                
+                <div className="border-l-4 border-[#003566] pl-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">Guiding Policy</h3>
+                  <p className="text-gray-600 text-lg leading-relaxed">{kernel.guidingPolicy}</p>
+                </div>
+                
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">Coherent Actions</h3>
+                  <div className="space-y-3">
+                    {kernel.actions.map((action, index) => (
+                      <div key={index} className="flex items-start group">
+                        <span className="text-[#FFD60A] text-2xl font-black mr-4 group-hover:text-[#003566] transition-colors">
+                          →
+                        </span>
+                        <span className="text-gray-600 text-lg flex-1">{action}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  };
+
+  return (
+    <div style={{fontFamily: 'system-ui, -apple-system, sans-serif'}}>
+      {currentView === 'home' && renderHome()}
+      {currentView === 'level-select' && renderLevelSelect()}
+      {currentView === 'kernel' && renderKernel()}
+    </div>
+  );
+};
+
+export default StrategySafari;
