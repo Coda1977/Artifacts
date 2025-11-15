@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Claude Artifacts</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        /* Dashboard Styles */
+        .dashboard {
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .add-new-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 0 auto 40px;
+            display: block;
+            transition: all 0.3s ease;
+        }
+        
+        .add-new-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .artifacts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+        }
+        
+        .artifact-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+        
+        .artifact-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .artifact-card h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            padding-right: 60px;
+        }
+        
+        .artifact-card p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .artifact-url {
+            background: #f5f5f5;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #667eea;
+            margin-bottom: 20px;
+            word-break: break-all;
+        }
+        
+        .qr-code {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #fafafa;
+            border-radius: 8px;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+        
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+        
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #d32f2f;
+        }
+        
+        .card-actions {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 18px;
+        }
+        
+        .icon-btn.edit {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .icon-btn.edit:hover {
+            background: #bbdefb;
+        }
+        
+        .icon-btn.delete {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+        
+        .icon-btn.delete:hover {
+            background: #ffcdd2;
+        }
+        
+        /* Artifact View Styles */
+        .artifact-view {
+            display: none;
+            width: 100%;
+            height: 100vh;
+        }
+        
+        .artifact-view iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            background: white;
+            max-width: 900px;
+            margin: 40px auto;
+            border-radius: 12px;
+            padding: 40px;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .modal-header h2 {
+            color: #333;
+            font-size: 2rem;
+        }
+        
+        .close-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: #f5f5f5;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+        
+        .close-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group textarea {
+            font-family: 'Courier New', monospace;
+            min-height: 300px;
+            resize: vertical;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Dashboard View -->
+    <div id="dashboardView" class="dashboard">
+        <div class="container">
+            <header>
+                <h1>🎨 My Artifacts Dashboard</h1>
+                <p>Manage and share your workshop tools</p>
+            </header>
+            
+            <button class="add-new-btn" onclick="openAddModal()">+ Add New Artifact</button>
+            
+            <div class="artifacts-grid" id="artifactsGrid">
+                <!-- Artifact cards will be generated here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Artifact View -->
+    <div id="artifactView" class="artifact-view">
+        <iframe id="artifactFrame"></iframe>
+    </div>
+    
+    <!-- Add/Edit Modal -->
+    <div id="artifactModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Artifact</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            
+            <form id="artifactForm" onsubmit="saveArtifact(event)">
+                <div class="form-group">
+                    <label for="artifactName">Artifact Name</label>
+                    <input type="text" id="artifactName" required placeholder="e.g., Leadership Workshop Game">
+                </div>
+                
+                <div class="form-group">
+                    <label for="artifactDescription">Description</label>
+                    <input type="text" id="artifactDescription" required placeholder="Brief description of what this artifact does">
+                </div>
+                
+                <div class="form-group">
+                    <label for="artifactCode">Artifact Code (HTML)</label>
+                    <textarea id="artifactCode" required placeholder="Paste your Claude artifact code here..."></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Artifact</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script>
+        // Initialize artifacts from localStorage or use defaults
+        let artifacts = JSON.parse(localStorage.getItem('artifacts')) || [];
+        let editingIndex = null;
+        
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            checkRoute();
+            window.addEventListener('hashchange', checkRoute);
+        });
+        
+        function checkRoute() {
+            const hash = window.location.hash.substring(1);
+            
+            if (hash) {
+                // Show specific artifact
+                showArtifact(hash);
+            } else {
+                // Show dashboard
+                showDashboard();
+            }
+        }
+        
+        function showDashboard() {
+            document.getElementById('dashboardView').style.display = 'block';
+            document.getElementById('artifactView').style.display = 'none';
+            renderArtifacts();
+        }
+        
+        function showArtifact(id) {
+            const artifact = artifacts.find(a => a.id === id);
+            
+            if (artifact) {
+                document.getElementById('dashboardView').style.display = 'none';
+                document.getElementById('artifactView').style.display = 'block';
+                
+                const iframe = document.getElementById('artifactFrame');
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                doc.open();
+                doc.write(artifact.code);
+                doc.close();
+            } else {
+                // Artifact not found, go back to dashboard
+                window.location.hash = '';
+            }
+        }
+        
+        function renderArtifacts() {
+            const grid = document.getElementById('artifactsGrid');
+            const baseUrl = window.location.origin + window.location.pathname;
+            
+            if (artifacts.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: white; padding: 60px; font-size: 1.2rem;">No artifacts yet. Click "Add New Artifact" to get started!</div>';
+                return;
+            }
+            
+            grid.innerHTML = '';
+            
+            artifacts.forEach((artifact, index) => {
+                const artifactUrl = `${baseUrl}#${artifact.id}`;
+                
+                const card = document.createElement('div');
+                card.className = 'artifact-card';
+                
+                // Create QR code canvas
+                const qrCanvas = document.createElement('canvas');
+                QRCode.toCanvas(qrCanvas, artifactUrl, { width: 150, margin: 1 });
+                
+                card.innerHTML = `
+                    <div class="card-actions">
+                        <button class="icon-btn edit" onclick="editArtifact(${index})" title="Edit">✏️</button>
+                        <button class="icon-btn delete" onclick="deleteArtifact(${index})" title="Delete">🗑️</button>
+                    </div>
+                    <h2>${artifact.name}</h2>
+                    <p>${artifact.description}</p>
+                    <div class="artifact-url">${artifactUrl}</div>
+                    <div class="qr-code"></div>
+                    <div class="buttons">
+                        <a href="#${artifact.id}" class="btn btn-primary">Open Artifact</a>
+                        <button onclick="copyUrl('${artifactUrl}')" class="btn btn-secondary">Copy URL</button>
+                    </div>
+                `;
+                
+                card.querySelector('.qr-code').appendChild(qrCanvas);
+                grid.appendChild(card);
+            });
+        }
+        
+        function openAddModal() {
+            editingIndex = null;
+            document.getElementById('modalTitle').textContent = 'Add New Artifact';
+            document.getElementById('artifactName').value = '';
+            document.getElementById('artifactDescription').value = '';
+            document.getElementById('artifactCode').value = '';
+            document.getElementById('artifactModal').style.display = 'block';
+        }
+        
+        function editArtifact(index) {
+            editingIndex = index;
+            const artifact = artifacts[index];
+            document.getElementById('modalTitle').textContent = 'Edit Artifact';
+            document.getElementById('artifactName').value = artifact.name;
+            document.getElementById('artifactDescription').value = artifact.description;
+            document.getElementById('artifactCode').value = artifact.code;
+            document.getElementById('artifactModal').style.display = 'block';
+        }
+        
+        function closeModal() {
+            document.getElementById('artifactModal').style.display = 'none';
+            editingIndex = null;
+        }
+        
+        function saveArtifact(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('artifactName').value;
+            const description = document.getElementById('artifactDescription').value;
+            const code = document.getElementById('artifactCode').value;
+            
+            const artifact = {
+                id: editingIndex !== null ? artifacts[editingIndex].id : generateId(name),
+                name: name,
+                description: description,
+                code: code
+            };
+            
+            if (editingIndex !== null) {
+                artifacts[editingIndex] = artifact;
+            } else {
+                artifacts.push(artifact);
+            }
+            
+            localStorage.setItem('artifacts', JSON.stringify(artifacts));
+            closeModal();
+            renderArtifacts();
+        }
+        
+        function deleteArtifact(index) {
+            if (confirm(`Delete "${artifacts[index].name}"? This cannot be undone.`)) {
+                artifacts.splice(index, 1);
+                localStorage.setItem('artifacts', JSON.stringify(artifacts));
+                renderArtifacts();
+            }
+        }
+        
+        function generateId(name) {
+            return name.toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-|-$/g, '')
+                + '-' + Date.now();
+        }
+        
+        function copyUrl(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                alert('URL copied to clipboard!');
+            });
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('artifactModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
