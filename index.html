@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strategy Workshop</title>
+    <style>
+        :root {
+            --bg-primary: #F5F0E8;
+            --text-primary: #1A1A1A;
+            --accent-yellow: #FFD60A;
+            --accent-blue: #0066CC;
+            --text-secondary: #4A4A4A;
+            --white: #FFFFFF;
+            --dark-bg: #2A2A2A;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow: hidden;
+        }
+
+        .container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: var(--white);
+            padding: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .timer {
+            font-size: clamp(32px, 5vw, 48px);
+            font-weight: 900;
+            color: var(--text-primary);
+            min-width: 150px;
+            text-align: center;
+            letter-spacing: -1px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 12px;
+            background: var(--bg-primary);
+            border-radius: 100px;
+            margin: 0 32px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-yellow);
+            border-radius: 100px;
+            transition: width 0.3s ease;
+        }
+
+        .slide-counter {
+            font-size: clamp(28px, 4vw, 36px);
+            font-weight: 900;
+            color: var(--accent-blue);
+            letter-spacing: -1px;
+            min-width: 120px;
+            text-align: center;
+            background: var(--bg-primary);
+            padding: 8px 20px;
+            border-radius: 100px;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 64px 32px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        .slide {
+            display: none;
+            animation: fadeIn 0.6s ease-out;
+            width: 100%;
+            max-width: 960px;
+            padding-bottom: 128px;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-size: clamp(48px, 8vw, 80px);
+            font-weight: 900;
+            letter-spacing: -2px;
+            line-height: 1.1;
+            margin-bottom: 32px;
+            color: var(--text-primary);
+        }
+
+        h2 {
+            font-size: clamp(32px, 5vw, 48px);
+            font-weight: 700;
+            letter-spacing: -1px;
+            line-height: 1.2;
+            margin-bottom: 32px;
+            color: var(--text-primary);
+        }
+
+        h3 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: inherit;
+            letter-spacing: -0.5px;
+        }
+
+        p {
+            font-size: 18px;
+            font-weight: 400;
+            line-height: 1.7;
+            color: inherit;
+            margin-bottom: 16px;
+        }
+
+        .subtitle {
+            font-size: 24px;
+            color: var(--text-secondary);
+            margin-bottom: 64px;
+            font-weight: 400;
+        }
+
+        .content-box {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 48px;
+            margin-bottom: 32px;
+            transition: all 0.3s ease;
+        }
+
+        .content-box:hover {
+            transform: translateY(-2px);
+        }
+
+        .content-box h3,
+        .content-box strong {
+            color: var(--text-primary);
+        }
+
+        .content-box p,
+        .content-box li {
+            color: var(--text-secondary);
+        }
+
+        .highlight-box {
+            background: var(--accent-blue);
+            color: var(--white);
+            border-radius: 24px;
+            padding: 48px;
+            margin-bottom: 32px;
+            transition: all 0.3s ease;
+        }
+
+        .highlight-box:hover {
+            transform: translateY(-2px);
+        }
+
+        .highlight-box *,
+        .highlight-box h3,
+        .highlight-box p,
+        .highlight-box li,
+        .highlight-box strong {
+            color: var(--white) !important;
+        }
+
+        .warning-box {
+            background: var(--dark-bg);
+            color: var(--white);
+            border-radius: 24px;
+            padding: 48px;
+            margin-bottom: 32px;
+            transition: all 0.3s ease;
+        }
+
+        .warning-box:hover {
+            transform: translateY(-2px);
+        }
+
+        .warning-box *,
+        .warning-box h3,
+        .warning-box p,
+        .warning-box li,
+        .warning-box strong {
+            color: var(--white) !important;
+        }
+
+        .success-box {
+            background: var(--accent-yellow);
+            color: var(--text-primary);
+            border-radius: 24px;
+            padding: 48px;
+            margin-bottom: 32px;
+            transition: all 0.3s ease;
+        }
+
+        .success-box:hover {
+            transform: translateY(-2px);
+        }
+
+        .success-box *,
+        .success-box h3,
+        .success-box p,
+        .success-box li,
+        .success-box strong {
+            color: var(--text-primary) !important;
+        }
+
+        .exercise-box {
+            background: var(--white);
+            border: 3px solid var(--accent-yellow);
+            border-radius: 24px;
+            padding: 48px;
+            margin-bottom: 32px;
+            transition: all 0.3s ease;
+        }
+
+        .exercise-box:hover {
+            transform: translateY(-2px);
+        }
+
+        .exercise-box h3,
+        .exercise-box strong {
+            color: var(--text-primary);
+        }
+
+        .exercise-box p,
+        .exercise-box li {
+            color: var(--text-secondary);
+        }
+
+        .case-data {
+            background: var(--white);
+            border-left: 6px solid var(--accent-yellow);
+            padding: 32px;
+            margin: 32px 0;
+            border-radius: 0 16px 16px 0;
+        }
+
+        .case-data h3,
+        .case-data strong {
+            color: var(--text-primary);
+        }
+
+        .case-data p,
+        .case-data li {
+            color: var(--text-secondary);
+        }
+
+        .expert-opinion {
+            background: var(--white);
+            border-left: 6px solid var(--accent-blue);
+            padding: 32px;
+            margin: 32px 0;
+            border-radius: 0 16px 16px 0;
+        }
+
+        .expert-opinion h3,
+        .expert-opinion strong {
+            color: var(--text-primary);
+        }
+
+        .expert-opinion p,
+        .expert-opinion li {
+            color: var(--text-secondary);
+        }
+
+        ul, ol {
+            margin-left: 32px;
+            margin-bottom: 24px;
+        }
+
+        li {
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+
+        button {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            border: none;
+            padding: 16px 40px;
+            border-radius: 100px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: -0.5px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        button:disabled {
+            background: var(--text-secondary);
+            cursor: not-allowed;
+            transform: none;
+            opacity: 0.5;
+        }
+
+        button:disabled:hover {
+            box-shadow: none;
+        }
+
+        .secondary-button {
+            background: var(--accent-yellow);
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        .secondary-button:hover {
+            background: #FFC700;
+        }
+
+        footer {
+            background: var(--white);
+            padding: 32px 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+        }
+
+        .reveal-content {
+            display: none;
+            margin-top: 48px;
+            padding-top: 48px;
+            border-top: 2px solid var(--bg-primary);
+        }
+
+        .reveal-content.show {
+            display: block;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @media (max-width: 767px) {
+            header {
+                padding: 16px;
+                flex-wrap: wrap;
+            }
+
+            .timer {
+                font-size: 28px;
+                min-width: 100px;
+            }
+
+            .slide-counter {
+                font-size: 24px;
+                min-width: 90px;
+                padding: 6px 16px;
+            }
+
+            .progress-bar {
+                width: 100%;
+                order: 3;
+                margin: 16px 0 0 0;
+            }
+
+            main {
+                padding: 32px 16px;
+            }
+
+            .content-box,
+            .highlight-box,
+            .warning-box,
+            .success-box,
+            .exercise-box {
+                padding: 32px 24px;
+            }
+
+            .case-data,
+            .expert-opinion {
+                padding: 24px;
+            }
+
+            footer {
+                padding: 24px;
+            }
+
+            button {
+                padding: 14px 32px;
+                font-size: 16px;
+            }
+        }
+
+        main {
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-yellow) var(--bg-primary);
+        }
+
+        main::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        main::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        main::-webkit-scrollbar-thumb {
+            background: var(--accent-yellow);
+            border-radius: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="timer" id="timer">00:00</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress"></div>
+            </div>
+            <div class="slide-counter">
+                <span id="current-slide">1</span>/<span id="total-slides">15</span>
+            </div>
+        </header>
+
+        <main id="main-content">
+            <div class="slide active">
+                <h1>Strategy Workshop</h1>
+                <p class="subtitle">Master strategy through practice</p>
+                <div class="content-box">
+                    <h3>Welcome Teams</h3>
+                    <p>You'll master a proven strategy framework through hands-on practice.</p>
+                    <p><strong>What you'll learn:</strong> How to identify critical challenges, design strategic approaches, and create coherent action plans.</p>
+                    <p><strong>Format:</strong> Practice cases with expert solutions to compare against your thinking.</p>
+                </div>
+                <div class="highlight-box">
+                    <h3>How This Works</h3>
+                    <ul>
+                        <li>Timer tracks total elapsed time</li>
+                        <li>Discuss first, then reveal insights</li>
+                        <li>Navigate with buttons below</li>
+                        <li>Debate is good</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="slide">
+                <h2>Define Strategy</h2>
+                <div class="exercise-box">
+                    <h3>Solo Work (2 min)</h3>
+                    <ul>
+                        <li>Write YOUR definition of strategy</li>
+                        <li>What makes something "strategic"?</li>
+                    </ul>
+                </div>
+                <div class="content-box">
+                    <h3>Team Share (3 min)</h3>
+                    <ol>
+                        <li>Share definitions</li>
+                        <li>Notice patterns</li>
+                        <li>Pick one to share</li>
+                    </ol>
+                </div>
+                <button onclick="toggleReveal(this)" class="secondary-button">Reveal Insight</button>
+                <div class="reveal-content">
+                    <div class="expert-opinion">
+                        <h3>The Insight</h3>
+                        <p>Good strategy isn't about goals or visions.</p>
+                        <p><strong>It's about identifying and overcoming critical obstacles.</strong></p>
+                    </div>
+                    <div class="content-box">
+                        <h3>Three Parts of a Good Strategy</h3>
+                        <ol>
+                            <li><strong>Diagnosis:</strong> Find the critical challenge</li>
+                            <li><strong>Guiding Policy:</strong> Choose your approach</li>
+                            <li><strong>Coherent Actions:</strong> Coordinate your moves</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide">
+                <h2>Diagnosis & Crux</h2>
+                <div class="content-box">
+                    <h3>What's Diagnosis?</h3>
+                    <p>Like a doctor examining a patient, diagnosis looks past symptoms to find root causes.</p>
+                    <p>A good diagnosis tells a clear story: "This is what's really going on here."</p>
+                    <p><strong>It simplifies complexity into understanding.</strong></p>
+                    <ul>
+                        <li>Names the critical challenges (not every problem)</li>
+                        <li>Shows how different issues connect</li>
+                        <li>Often reframes the situation surprisingly</li>
+                    </ul>
+                </div>
+                <div class="highlight-box">
+                    <h3>The Crux</h3>
+                    <p>Within your diagnosis, find the ONE challenge that matters most.</p>
+                    <p>Think of it as the knot that, once untied, makes everything else easier.</p>
+                    <p><strong>Three essential criteria:</strong></p>
+                    <ul>
+                        <li><strong>Critical:</strong> If you don't solve this, nothing else matters</li>
+                        <li><strong>Solvable:</strong> Actually within your power to address</li>
+                        <li><strong>Keystone:</strong> Solving it creates cascading positive effects</li>
+                    </ul>
+                </div>
+                <div class="expert-opinion">
+                    <h3>Real Example: Nokia 2007</h3>
+                    <p><strong>Symptoms:</strong> Falling market share, low employee morale, declining profits.</p>
+                    <p><strong>The Real Crux:</strong> "The basis of competition in phones shifted from hardware excellence to software ecosystems, but Nokia was organized only for hardware."</p>
+                    <p>See how the crux explains WHY the symptoms exist?</p>
+                </div>
+            </div>
+
+            <div class="slide">
+                <h2>Case: PageTurner Books</h2>
+                <div class="case-data">
+                    <h3>Company Situation</h3>
+                    <p>50-store bookstore chain struggling in 2012. Sales declining 15% yearly.</p>
+                    <ul>
+                        <li>70% of revenue comes from just 20% of stores (ones with cafes)</li>
+                        <li>Online sales exist but lose money on every order</li>
+                        <li>Customers love browsing in stores, then buy the same books cheaper on Amazon</li>
+                        <li>High inventory costs are destroying profit margins</li>
+                        <li>Locked into 5+ year store leases</li>
+                    </ul>
+                    <p><strong>CEO's Strategy:</strong> "Become the most beloved bookstore brand and return to profitability."</p>
+                </div>
+                <div class="exercise-box">
+                    <h3>Find the Problems (5 min)</h3>
+                    <ol>
+                        <li>What's wrong with the CEO's "strategy"?</li>
+                        <li>List all the challenges PageTurner faces</li>
+                        <li>Which challenge might be the crux?</li>
+                    </ol>
+                    <p style="margin-top: 16px;"><strong>Example of a challenge:</strong> "Our stores generate foot traffic but not purchases."</p>
+                </div>
+            </div>
+
+            <div class="slide">
+                <h2>Identify the Crux</h2>
+                <div class="content-box">
+                    <h3>Remember the Criteria</h3>
+                    <p>The crux is the ONE challenge that unlocks everything else.</p>
+                    <ul>
+                        <li><strong>Critical:</strong> Without solving this, nothing else matters</li>
+                        <li><strong>Solvable:</strong> Actually within PageTurner's control</li>
+                        <li><strong>Keystone:</strong> Fixing this makes other problems easier</li>
+                    </ul>
+                </div>
+                <div class="exercise-box">
+                    <h3>Team Debate (10 min)</h3>
+                    <p>From your list of challenges, which ONE is the true crux?</p>
+                    <p>Test each challenge against the three criteria above.</p>
+                    <p>Be ready to defend your choice.</p>
+                </div>
+                <button onclick="toggleReveal(this)" class="secondary-button">Reveal Expert Crux</button>
+                <div class="reveal-content">
+                    <div class="success-box">
+                        <h3>The Expert's Crux</h3>
+                        <p>"PageTurner has expensive long-term store leases for a retail model that no longer works."</p>
+                        <p><strong>The real challenge: Transform these fixed-cost liabilities into revenue-generating assets before running out of cash.</strong></p>
+                    </div>
+                    <div class="content-box">
+                        <h3>Why This Is THE Crux</h3>
+                        <ul>
+                            <li><strong>Critical:</strong> Company bleeds money every month - will die before leases expire</li>
+                            <li><strong>Solvable:</strong> Can't break leases, but CAN reimagine what happens inside stores</li>
+                            <li><strong>Keystone:</strong> New store model solves inventory, online, and profit problems</li>
+                        </ul>
+                        <p><strong>Note:</strong> The expert reframed from "competing with Amazon" to "asset transformation."</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide">
+                <h2>Guiding Policy</h2>
+                <div class="content-box">
+                    <h3>What's a Guiding Policy?</h3>
+                    <p>Your overall approach for overcoming the crux. It's a method, not a goal.</p>
+                    <p><strong>A good policy rules things out.</strong> It says "we'll do it THIS way, not THAT way."</p>
+                    <p>Think of it as choosing whether to go around, through, or over an obstacle.</p>
+                </div>
+                <div class="highlight-box">
+                    <h3>Common Policy Types</h3>
+                    <ul>
+                        <li><strong>Focus:</strong> Stop doing many things to excel at few</li>
+                        <li><strong>Leverage:</strong> Use existing assets in new ways</li>
+                        <li><strong>Proximate:</strong> Break big challenges into achievable steps</li>
+                        <li><strong>Asymmetric:</strong> Compete where others can't or won't</li>
+                    </ul>
+                </div>
+                <div class="expert-opinion">
+                    <h3>Southwest Airlines Example</h3>
+                    <p><strong>Their Crux:</strong> "How do we compete against established airlines with deep pockets?"</p>
+                    <p><strong>Their Policy:</strong> "Turn what big airlines consider necessary features into unnecessary costs."</p>
+                    <p>This ruled out: assigned seats, multiple aircraft types, hub systems, meal service, and connecting flights. By defining what NOT to do, Southwest created a new way to compete.</p>
+                </div>
+            </div>
+
+            <div class="slide">
+                <h2>Design Three Policies</h2>
+                <div class="exercise-box">
+                    <h3>Create 3 Different Guiding Policies (15 min)</h3>
+                    <p>For PageTurner's crux (transforming store liabilities into assets), design three distinct policies:</p>
+                    <ol>
+                        <li><strong>Focus Policy:</strong> What could we stop doing to excel at one thing?</li>
+                        <li><strong>Leverage Policy:</strong> How could we exploit an unexpected asymmetry?</li>
+                        <li><strong>Redesign Policy:</strong> How could we reimagine the entire model?</li>
+                    </ol>
+                    <p>Write each policy as 1-2 clear sentences describing your approach.</p>
+                </div>
+                <button onclick="toggleReveal(this)" class="secondary-button">Reveal Expert Policies</button>
+                <div class="reveal-content">
+                    <div class="success-box">
+                        <h3>Three Expert Policies</h3>
+                        <ol>
+                            <li><strong>Leverage Policy:</strong> "Partner with Amazon to become their premium physical showroom, getting paid for what we already do while keeping our profitable cafe operations. We'll embrace the showrooming instead of fighting it."</li>
+                            <li><strong>Focus Policy:</strong> "Convert 80% of each store into membership-based urban work clubs, keeping only curated book collections. We'll stop trying to be retailers and become productivity spaces."</li>
+                            <li><strong>Redesign Policy:</strong> "Shift from selling books to selling time and community. Stores become subscription-based 'third places' where books create atmosphere for what we're really selling: a place to belong."</li>
+                        </ol>
+                    </div>
+                    <div class="content-box">
+                        <p><strong>Notice:</strong> Each policy takes a completely different approach to the same crux. That's the power of strategic choice.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide">
+                <h2>Coherent Actions</h2>
+                <div class="content-box">
+                    <h3>What Makes Actions Coherent?</h3>
+                    <p>Coherent actions work together like fingers making a fist. Each one makes the others stronger.</p>
+                    <p><strong>Key principle:</strong> It's not a list of good ideas. It's a coordinated set of moves that reinforce each other to implement your policy.</p>
+                    <p>Ask: "If we do A, does it make B easier or harder?"</p>
+                </div>
+                <div class="warning-box">
+                    <h3>Signs of Incoherent Actions</h3>
+                    <ul>
+                        <li>One action undoes another (cut costs + improve service)</li>
+                        <li>Fighting for same resources (everyone needs the IT team)</li>
+                        <li>Sending mixed messages to customers or staff</li>
+                        <li>Actually just goals in disguise ("improve satisfaction")</li>
+                    </ul>
+                </div>
+                <div class="expert-opinion">
+                    <h3>Starbucks Example</h3>
+                    <p><strong>Their Crux:</strong> Coffee becoming commoditized - McDonald's selling "premium" coffee.</p>
+                    <p><strong>Their Policy:</strong> Re-establish ourselves as the authentic coffee craft experience.</p>
+                    <p><strong>Coherent Actions:</strong></p>
+                    <ol>
+                        <li>Closed 7,100 stores for retraining (signal: quality matters more than revenue)</li>
+                        <li>Removed breakfast sandwiches (protect coffee aroma)</li>
+                        <li>Installed new espresso machines (baristas could see customers again)</li>
+                        <li>Slowed down service (craft takes time)</li>
+                    </ol>
+                    <p>Every action reinforced the same message: "We're about coffee craft, not fast food."</p>
+                </div>
+            </div>
+
+            <div class="slide">
+                <h2>Design Actions</h2>
+                <div class="content-box">
+                    <h3>Your Guiding Policy</h3>
+                    <p>"Transform our stores from book retailers into subscription-based community spaces where books create atmosphere for what we're really selling: productive social environments."</p>
+                    <p>In other words: Stop selling books. Start selling belonging.</p>
+                </div>
+                <div class="exercise-box">
+                    <h3>Create 5 Coherent Actions (15 min)</h3>
+                    <ol>
+                        <li>Support the policy above</li>
+                        <li>Reinforce each other</li>
+                        <li>Could start within 90 days</li>
+                        <li>Work within current lease constraints</li>
+                    </ol>
+                </div>
+                <button onclick="toggleReveal(this)" class="secondary-button">Reveal Expert Actions</button>
+                <div class="reveal-content">
+                    <div class="success-box">
+                        <h3>Expert's Five Coherent Actions</h3>
+                        <ol>
+                            <li><strong>Launch "PageTurner Plus" at $15/month:</strong> Unlimited store access, reserved desks, free coffee, 20% book discount</li>
+                            <li><strong>Convert 60% of space to work zones:</strong> Quiet zones, collaboration areas, phone booths - all bookable via app</li>
+                            <li><strong>Transform 80% of staff into Community Hosts:</strong> From book sellers to community builders who facilitate connections</li>
+                            <li><strong>Create tiered membership spaces:</strong> Basic members get common areas, Premium gets private offices</li>
+                            <li><strong>Partner with local professionals:</strong> Weekly workshops on writing, business, creativity - exclusive to members</li>
+                        </ol>
+                    </div>
+                    <div class="content-box">
+                        <h3>How They Connect</h3>
+                        <p>Membership funds space conversion. Less retail floor means fewer sellers needed. Hosts run member programs. Tiered pricing drives premium upgrades. Workshops create community. Every action reduces dependence on book sales while increasing recurring revenue.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide">
+                <h2>The Complete Model</h2>
+                <div class="highlight-box">
+                    <h3>How Strategy Works</h3>
+                    <p>You've now practiced each part. Here's how they connect:</p>
+                    <ol>
+                        <li><strong>Diagnosis finds the crux</strong> - The ONE critical, solvable challenge</li>
+                        <li><strong>Policy sets direction</strong> - Your chosen approach to overcome that challenge</li>
+                        <li><strong>Actions make it real</strong> - Specific moves that reinforce each other</li>
+                    </ol>
+                    <p>Think of it as a chain: Right problem → Smart approach → Coordinated execution</p>
+                </div>
+                <div class="content-box">
+                    <h3>The PageTurner Example</h3>
+                    <ul>
+                        <li><strong>Diagnosis:</strong> "Long leases trap us in a failed retail model"</li>
+                        <li><strong>Policy:</strong> "Transform stores into community spaces"</li>
+                        <li><strong>Actions:</strong> Membership model + space conversion + staff transformation</li>
+                    </ul>
+                    <p>See how each part flows from the previous? The diagnosis shapes the policy. The policy guides the actions.</p>
+                </div>
+                <div class="expert-opinion">
+                    <h3>Common Mistakes to Avoid</h3>
+                    <ul>
+                        <li><strong>Starting with actions:</strong> "Let's launch an app!" (But why?)</li>
+                        <li><strong>Confusing goals with strategy:</strong> "Be #1 in our market" (That's a wish)</li>
+                        <li><strong>Kitchen sink approach:</strong> Twenty "strategic priorities" (That's a to-do list)</li>
+                    </ul>
+                    <p><strong>Remember:</strong> Good strategy makes hard choices. It says NO more than YES.</p>
+                </div>
+            </div>
+
+            <div class="slide">
+                <h2>Strategy Traps</h2>
+                <div class="warning-box">
+                    <h3>Red Flag</h3>
+                    <p>The most dangerous bad strategies look good on the surface.</p>
+                    <p>They use the right buzzwords and follow the right format.</p>
+                    <p><strong>But they contain fatal flaws that guarantee failure.</strong></p>
+                </div>
+                <div class="content-box">
+                    <h3>Three Common Strategy Traps</h3>
+                    <ul>
+                        <li><strong>Wrong Problem Trap:</strong> Solving the wrong issue brilliantly. Like prescribing headache medicine for a broken leg.</li>
+                        <li><strong>Resource Fantasy Trap:</strong> Trying to win at a game where you're hopelessly outmatched. Like challenging NBA players when you're five feet tall.</li>
+                        <li><strong>Self-Destruction Trap:</strong> The "solution" destroys what makes you valuable. Like a library competing with Netflix by getting rid of books.</li>
+                    </ul>
+                    <p>Your task: Spot these traps in strategies that seem reasonable.</p>
+                </div>
+            </div>
+
+            <div class="slide">
+                <h2>TechCorp Cloud</h2>
+                <div class="case-data">
+                    <h3>Context</h3>
+                    <p>TechCorp has 5% cloud market share vs AWS (45%), Azure (25%).</p>
+                    <p>Customer feedback: happy with support quality but consistently cite "limited features" and "poor performance" as reasons for leaving.</p>
+                    <p><strong>Their Strategy:</strong></p>
+                    <ul>
+                        <li><strong>Crux:</strong> "We're losing market share to competitors"</li>
+                        <li><strong>Policy:</strong> "Win through superior customer service"</li>
+                        <li><strong>Actions:</strong> Hire more support staff, launch 24/7 phone support, create dedicated account managers</li>
+                    </ul>
+                </div>
+                <div class="exercise-box">
+                    <h3>Find the Fatal Flaw (7 min)</h3>
+                    <p>This strategy sounds reasonable. What will make it fail?</p>
+                    <p>Which trap does it fall into?</p>
+                </div>
+                <button onclick="toggleReveal(this)" class="secondary-button">Reveal Flaw</button>
+                <div class="reveal-content">
+                    <div class="warning-box">
+                        <h3>Fatal Flaw: Wrong Problem Trap</h3>
+                        <p>The crux is wrong. Customers aren't leaving because of service - they're leaving because of features and performance.</p>
+                        <p><strong>Great service on a bad product = helping customers discover the flaws faster.</strong></p>
+                        <p>The real crux: "Our product fundamentally can't compete on capabilities that matter to customers."</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide">
+                <h2>LuxuryWatch</h2>
+                <div class="case-data">
+                    <h3>Context</h3>
+                    <p>Premium watch brand. $10K-50K price range. Current customers are 55+.</p>
+                    <p>Focus groups with younger consumers: "old-fashioned," "my grandfather's watch," "not relevant to my life."</p>
+                    <p><strong>Their Strategy:</strong></p>
+                    <ul>
+                        <li><strong>Crux:</strong> "Young people don't buy our watches"</li>
+                        <li><strong>Policy:</strong> "Become digitally native luxury brand"</li>
+                        <li><strong>Actions:</strong> Launch NFT collection, create TikTok presence, sponsor gaming tournaments, develop smartwatch line</li>
+                    </ul>
+                </div>
+                <div class="exercise-box">
+                    <h3>Find the Fatal Flaw (7 min)</h3>
+                    <p>What's wrong with this strategy?</p>
+                    <p>Which trap does it fall into?</p>
+                </div>
+                <button onclick="toggleReveal(this)" class="secondary-button">Reveal Flaw</button>
+                <div class="reveal-content">
+                    <div class="warning-box">
+                        <h3>Fatal Flaw: Self-Destruction Trap</h3>
+                        <p>The strategy destroys the brand's essence. Luxury = exclusive + timeless + craft heritage.</p>
+                        <p>NFTs, TikTok, and gaming make the brand trendy, not timeless. Mass digital presence destroys exclusivity.</p>
+                        <p><strong>What wealthy young buyers actually want: sustainability credentials + authentic craft stories + heritage with purpose.</strong></p>
+                        <p>The policy attacks the brand's core value instead of leveraging it.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide">
+                <h2>RegionalBank</h2>
+                <div class="case-data">
+                    <h3>Context</h3>
+                    <p>Regional bank with 50 branches. Annual tech budget: $10M. Competing against FinTech startups that spend $500M+ on technology.</p>
+                    <p>Customer data: 70% of customers live within 5 miles of a branch and value in-person relationships.</p>
+                    <p><strong>Their Strategy:</strong></p>
+                    <ul>
+                        <li><strong>Crux:</strong> "FinTech companies are stealing our customers with better apps"</li>
+                        <li><strong>Policy:</strong> "Achieve digital parity with FinTechs"</li>
+                        <li><strong>Actions:</strong> Build new mobile app, migrate to cloud, implement AI chatbot, add cryptocurrency trading</li>
+                    </ul>
+                </div>
+                <div class="exercise-box">
+                    <h3>Find the Fatal Flaw (7 min)</h3>
+                    <p>Why won't this work?</p>
+                    <p>Which trap does it fall into?</p>
+                </div>
+                <button onclick="toggleReveal(this)" class="secondary-button">Reveal Flaw</button>
+                <div class="reveal-content">
+                    <div class="warning-box">
+                        <h3>Fatal Flaw: Resource Fantasy Trap</h3>
+                        <p>50:1 spending disadvantage makes "digital parity" impossible. They'll always be years behind.</p>
+                        <p><strong>The strategy ignores their real strength: 50 physical branches where customers actually live.</strong></p>
+                        <p>Better crux: "FinTechs can't provide local, in-person financial guidance that our aging demographic values."</p>
+                        <p>Better policy: "Use branches for complex services FinTechs can't replicate - estate planning, business banking, mortgage counseling."</p>
+                    </div>
+                    <div class="expert-opinion">
+                        <p><strong>Lesson:</strong> Bad strategy attacks where you're weak, not where you're strong. Good strategy exploits asymmetry.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide">
+                <h2>Team Reflection</h2>
+                <div class="exercise-box">
+                    <h3>Discuss Together (5 min)</h3>
+                    <ol>
+                        <li><strong>How is strategy different from what you thought?</strong> (Goals? Vision? Planning?)</li>
+                        <li><strong>What bad strategy habits does your organization have?</strong> (Starting with goals? Avoiding hard truths? Creating wish lists?)</li>
+                    </ol>
+                </div>
+                <div class="highlight-box">
+                    <h3>Closing Wisdom</h3>
+                    <p>The strategy kernel - diagnosis, guiding policy, and coherent action - is simple to describe but hard to do.</p>
+                    <p>Most organizations prefer the comfort of setting ambitious goals to the discomfort of facing their real challenges.</p>
+                    <p><strong>Your job: Find the courage to face the truth about your crux.</strong></p>
+                </div>
+                <div class="content-box">
+                    <h3>Apply These Guidelines</h3>
+                    <ul>
+                        <li>Start with diagnosis, not goals</li>
+                        <li>Find the crux that unlocks progress</li>
+                        <li>Design policies that create advantage</li>
+                        <li>Build actions that reinforce each other</li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <button id="prev-btn" onclick="previousSlide()" disabled>Previous</button>
+            <button id="next-btn" onclick="nextSlide()">Next</button>
+        </footer>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 15;
+        let startTime = Date.now();
+        let timerInterval = null;
+
+        function updateSlideDisplay() {
+            const slides = document.querySelectorAll('.slide');
+            slides.forEach((slide, index) => {
+                slide.classList.toggle('active', index === currentSlide - 1);
+            });
+
+            document.getElementById('current-slide').textContent = currentSlide;
+            document.getElementById('progress').style.width = `${(currentSlide / totalSlides) * 100}%`;
+
+            document.getElementById('prev-btn').disabled = currentSlide === 1;
+            document.getElementById('next-btn').disabled = currentSlide === totalSlides;
+
+            document.getElementById('main-content').scrollTop = 0;
+        }
+
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            const display = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('timer').textContent = display;
+        }
+
+        function startGlobalTimer() {
+            updateTimer();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                currentSlide++;
+                updateSlideDisplay();
+            }
+        }
+
+        function previousSlide() {
+            if (currentSlide > 1) {
+                currentSlide--;
+                updateSlideDisplay();
+            }
+        }
+
+        function toggleReveal(button) {
+            const revealContent = button.nextElementSibling;
+            const isShowing = revealContent.classList.contains('show');
+            revealContent.classList.toggle('show');
+            button.textContent = isShowing ? button.textContent.replace('Hide', 'Reveal') : button.textContent.replace('Reveal', 'Hide');
+            
+            if (!isShowing) {
+                setTimeout(() => {
+                    revealContent.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' && currentSlide < totalSlides) nextSlide();
+            if (e.key === 'ArrowLeft' && currentSlide > 1) previousSlide();
+        });
+
+        updateSlideDisplay();
+        startGlobalTimer();
+    </script>
+</body>
+</html>
