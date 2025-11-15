@@ -337,22 +337,22 @@
                 <button class="close-btn" onclick="closeModal()">&times;</button>
             </div>
             
-            <form id="artifactForm" onsubmit="saveArtifact(event)">
+            <form id="artifactForm">
                 <div class="form-group">
                     <label for="artifactName">Artifact Name</label>
                     <input type="text" id="artifactName" required placeholder="e.g., Leadership Workshop Game">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="artifactDescription">Description</label>
                     <input type="text" id="artifactDescription" required placeholder="Brief description of what this artifact does">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="artifactCode">Artifact Code (HTML)</label>
                     <textarea id="artifactCode" required placeholder="Paste your Claude artifact code here..."></textarea>
                 </div>
-                
+
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
                     <button type="submit" class="btn btn-primary">Save Artifact</button>
@@ -371,6 +371,12 @@
         window.addEventListener('load', () => {
             checkRoute();
             window.addEventListener('hashchange', checkRoute);
+
+            // Attach form submit handler
+            const form = document.getElementById('artifactForm');
+            if (form) {
+                form.addEventListener('submit', saveArtifact);
+            }
         });
         
         function checkRoute() {
@@ -412,24 +418,32 @@
         function renderArtifacts() {
             const grid = document.getElementById('artifactsGrid');
             const baseUrl = window.location.origin + window.location.pathname;
-            
+
             if (artifacts.length === 0) {
                 grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: white; padding: 60px; font-size: 1.2rem;">No artifacts yet. Click "Add New Artifact" to get started!</div>';
                 return;
             }
-            
+
             grid.innerHTML = '';
-            
+
             artifacts.forEach((artifact, index) => {
                 const artifactUrl = `${baseUrl}#${artifact.id}`;
-                
+
                 const card = document.createElement('div');
                 card.className = 'artifact-card';
-                
-                // Create QR code canvas
+
+                // Create QR code canvas with error handling
                 const qrCanvas = document.createElement('canvas');
-                QRCode.toCanvas(qrCanvas, artifactUrl, { width: 150, margin: 1 });
-                
+                try {
+                    if (typeof QRCode !== 'undefined') {
+                        QRCode.toCanvas(qrCanvas, artifactUrl, { width: 150, margin: 1 });
+                    } else {
+                        console.warn('QRCode library not loaded');
+                    }
+                } catch (error) {
+                    console.error('Error generating QR code:', error);
+                }
+
                 card.innerHTML = `
                     <div class="card-actions">
                         <button class="icon-btn edit" onclick="editArtifact(${index})" title="Edit">✏️</button>
@@ -444,7 +458,7 @@
                         <button onclick="copyUrl('${artifactUrl}')" class="btn btn-secondary">Copy URL</button>
                     </div>
                 `;
-                
+
                 card.querySelector('.qr-code').appendChild(qrCanvas);
                 grid.appendChild(card);
             });
@@ -476,27 +490,35 @@
         
         function saveArtifact(event) {
             event.preventDefault();
-            
-            const name = document.getElementById('artifactName').value;
-            const description = document.getElementById('artifactDescription').value;
-            const code = document.getElementById('artifactCode').value;
-            
-            const artifact = {
-                id: editingIndex !== null ? artifacts[editingIndex].id : generateId(name),
-                name: name,
-                description: description,
-                code: code
-            };
-            
-            if (editingIndex !== null) {
-                artifacts[editingIndex] = artifact;
-            } else {
-                artifacts.push(artifact);
+
+            try {
+                const name = document.getElementById('artifactName').value;
+                const description = document.getElementById('artifactDescription').value;
+                const code = document.getElementById('artifactCode').value;
+
+                const artifact = {
+                    id: editingIndex !== null ? artifacts[editingIndex].id : generateId(name),
+                    name: name,
+                    description: description,
+                    code: code
+                };
+
+                if (editingIndex !== null) {
+                    artifacts[editingIndex] = artifact;
+                } else {
+                    artifacts.push(artifact);
+                }
+
+                localStorage.setItem('artifacts', JSON.stringify(artifacts));
+                closeModal();
+                renderArtifacts();
+
+                // Show success feedback
+                console.log('Artifact saved successfully:', artifact.name);
+            } catch (error) {
+                console.error('Error saving artifact:', error);
+                alert('Error saving artifact. Please check the console for details.');
             }
-            
-            localStorage.setItem('artifacts', JSON.stringify(artifacts));
-            closeModal();
-            renderArtifacts();
         }
         
         function deleteArtifact(index) {
