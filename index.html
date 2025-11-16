@@ -657,17 +657,8 @@
         let artifacts = JSON.parse(localStorage.getItem('artifacts')) || [];
         let editingIndex = null;
         
-        // Initialize on page load
-        window.addEventListener('load', () => {
-            checkRoute();
-            window.addEventListener('hashchange', checkRoute);
-
-            // Attach form submit handler
-            const form = document.getElementById('artifactForm');
-            if (form) {
-                form.addEventListener('submit', saveArtifact);
-            }
-        });
+        // Legacy load handler (will be removed)
+        // Keeping for backward compatibility but using DOMContentLoaded below
         
         function checkRoute() {
             const hash = window.location.hash.substring(1);
@@ -1286,6 +1277,13 @@
             ensureQRCodeLibrary()
                 .then(() => console.log('QR library preloaded successfully'))
                 .catch(err => console.error('QR library preload failed:', err));
+
+            // Attach form submit handler
+            const form = document.getElementById('artifactForm');
+            if (form) {
+                form.addEventListener('submit', saveArtifact);
+                console.log('Form submit handler attached');
+            }
 
             // Initialize the page
             checkRoute();

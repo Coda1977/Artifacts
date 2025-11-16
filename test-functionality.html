@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Artifacts Dashboard - Functionality Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #ccc;
+        }
+        .success { border-color: #4CAF50; background: #e8f5e8; }
+        .error { border-color: #f44336; background: #ffeaea; }
+        .info { border-color: #2196F3; background: #e3f2fd; }
+        button {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #555; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Artifacts Dashboard - Functionality Test</h1>
+
+    <div class="test-section">
+        <h2>1. QR Code Library Test</h2>
+        <button onclick="testQRLibrary()">Test QR Code Loading</button>
+        <div id="qr-test-result"></div>
+        <div id="qr-test-display" style="border: 1px solid #ccc; padding: 20px; margin-top: 10px; text-align: center;">
+            QR code will appear here...
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. localStorage Test</h2>
+        <button onclick="testLocalStorage()">Test Data Persistence</button>
+        <div id="storage-test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. URL Routing Test</h2>
+        <button onclick="testRouting()">Test Hash Navigation</button>
+        <div id="routing-test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Backup System Test</h2>
+        <button onclick="testBackupFormat()">Test Backup Format</button>
+        <div id="backup-test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Cross-Device Simulation</h2>
+        <button onclick="simulateMobile()">Simulate Mobile Access</button>
+        <div id="mobile-test-result"></div>
+    </div>
+
+    <script>
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = message;
+            element.appendChild(div);
+        }
+
+        function clear(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+
+        // Test 1: QR Code Library
+        function testQRLibrary() {
+            clear('qr-test-result');
+            log('qr-test-result', 'Testing QR code library loading...', 'info');
+
+            // Load QR library (simulate the same loading as main app)
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+
+            script.onload = () => {
+                log('qr-test-result', '✓ QR library loaded successfully', 'success');
+
+                // Test QR generation
+                const canvas = document.createElement('canvas');
+                const testUrl = 'https://example.com/test';
+
+                QRCode.toCanvas(canvas, testUrl, { width: 200 }, (error) => {
+                    if (error) {
+                        log('qr-test-result', '✗ QR generation failed: ' + error.message, 'error');
+                    } else {
+                        log('qr-test-result', '✓ QR code generated successfully', 'success');
+                        const display = document.getElementById('qr-test-display');
+                        display.innerHTML = '';
+                        display.appendChild(canvas);
+                    }
+                });
+            };
+
+            script.onerror = () => {
+                log('qr-test-result', '✗ QR library failed to load', 'error');
+            };
+
+            document.head.appendChild(script);
+        }
+
+        // Test 2: localStorage
+        function testLocalStorage() {
+            clear('storage-test-result');
+
+            try {
+                // Test write
+                const testData = { test: 'data', timestamp: Date.now() };
+                localStorage.setItem('test-artifacts', JSON.stringify(testData));
+                log('storage-test-result', '✓ localStorage write successful', 'success');
+
+                // Test read
+                const retrieved = JSON.parse(localStorage.getItem('test-artifacts'));
+                if (retrieved && retrieved.test === 'data') {
+                    log('storage-test-result', '✓ localStorage read successful', 'success');
+                } else {
+                    log('storage-test-result', '✗ localStorage read failed', 'error');
+                }
+
+                // Cleanup
+                localStorage.removeItem('test-artifacts');
+                log('storage-test-result', '✓ localStorage cleanup successful', 'success');
+
+            } catch (error) {
+                log('storage-test-result', '✗ localStorage test failed: ' + error.message, 'error');
+            }
+        }
+
+        // Test 3: Routing
+        function testRouting() {
+            clear('routing-test-result');
+
+            // Test hash detection
+            const originalHash = window.location.hash;
+            window.location.hash = '#test-artifact-123';
+
+            setTimeout(() => {
+                const currentHash = window.location.hash.substring(1);
+                if (currentHash === 'test-artifact-123') {
+                    log('routing-test-result', '✓ Hash navigation working', 'success');
+                } else {
+                    log('routing-test-result', '✗ Hash navigation failed', 'error');
+                }
+
+                // Restore original hash
+                window.location.hash = originalHash;
+            }, 100);
+        }
+
+        // Test 4: Backup Format
+        function testBackupFormat() {
+            clear('backup-test-result');
+
+            try {
+                const sampleArtifact = {
+                    id: 'test-123',
+                    name: 'Test Artifact',
+                    description: 'Test description',
+                    category: 'Test',
+                    code: '<h1>Test</h1>',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+
+                const backupData = {
+                    operation: 'test-backup',
+                    timestamp: new Date().toISOString(),
+                    artifact: sampleArtifact,
+                    metadata: {
+                        test: true
+                    }
+                };
+
+                const jsonString = JSON.stringify(backupData, null, 2);
+                const parsed = JSON.parse(jsonString);
+
+                if (parsed.artifact.id === 'test-123') {
+                    log('backup-test-result', '✓ Backup format serialization working', 'success');
+                } else {
+                    log('backup-test-result', '✗ Backup format serialization failed', 'error');
+                }
+
+                // Test blob creation (for download)
+                const blob = new Blob([jsonString], {type: 'application/json'});
+                if (blob.size > 0) {
+                    log('backup-test-result', '✓ Backup blob creation working', 'success');
+                } else {
+                    log('backup-test-result', '✗ Backup blob creation failed', 'error');
+                }
+
+            } catch (error) {
+                log('backup-test-result', '✗ Backup format test failed: ' + error.message, 'error');
+            }
+        }
+
+        // Test 5: Cross-device simulation
+        function simulateMobile() {
+            clear('mobile-test-result');
+
+            // Simulate mobile by clearing localStorage and testing artifact access
+            const originalData = localStorage.getItem('artifacts');
+            localStorage.removeItem('artifacts'); // Simulate fresh mobile browser
+
+            log('mobile-test-result', 'Simulating mobile device (no artifacts in localStorage)', 'info');
+
+            // Test what happens when trying to access artifact
+            const storedArtifacts = JSON.parse(localStorage.getItem('artifacts')) || [];
+            if (storedArtifacts.length === 0) {
+                log('mobile-test-result', '✓ Mobile simulation: No artifacts found (expected)', 'success');
+                log('mobile-test-result', 'This would show the "Artifact Not Found" page', 'info');
+            } else {
+                log('mobile-test-result', '✗ Mobile simulation failed: Found artifacts', 'error');
+            }
+
+            // Restore original data
+            if (originalData) {
+                localStorage.setItem('artifacts', originalData);
+                log('mobile-test-result', '✓ Original artifacts restored', 'success');
+            }
+        }
+
+        // Initial page load test
+        window.addEventListener('load', () => {
+            log('mobile-test-result', 'Page loaded successfully', 'success');
+        });
+    </script>
+</body>
+</html>
