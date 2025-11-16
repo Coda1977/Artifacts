@@ -661,21 +661,32 @@
                 grid.appendChild(card);
 
                 // Generate QR code after the element is in DOM
-                setTimeout(() => generateQRCode(`qr-${index}`, artifactUrl), 100);
+                setTimeout(() => generateQRCode(`qr-${index}`, artifactUrl), 500);
             });
         }
 
         function generateQRCode(elementId, url) {
             const qrContainer = document.getElementById(elementId);
-            if (!qrContainer) return;
+            if (!qrContainer) {
+                console.log('QR container not found:', elementId);
+                return;
+            }
 
-            if (typeof QRCode !== 'undefined') {
+            function createQR() {
+                if (typeof QRCode === 'undefined') {
+                    console.log('QRCode library not loaded yet, retrying...');
+                    setTimeout(createQR, 100);
+                    return;
+                }
+
                 try {
                     // Clear loading message
                     qrContainer.innerHTML = '';
 
                     // Create canvas
                     const canvas = document.createElement('canvas');
+                    console.log('Generating QR code for:', url);
+
                     QRCode.toCanvas(canvas, url, {
                         width: 150,
                         margin: 1,
@@ -686,8 +697,9 @@
                     }, (error) => {
                         if (error) {
                             console.error('QR Code generation error:', error);
-                            qrContainer.innerHTML = '<div class="qr-error">QR code failed to generate</div>';
+                            qrContainer.innerHTML = '<div class="qr-error">QR code failed to generate: ' + error.message + '</div>';
                         } else {
+                            console.log('QR code generated successfully');
                             qrContainer.appendChild(canvas);
 
                             // Add download button
@@ -700,18 +712,12 @@
                     });
                 } catch (error) {
                     console.error('Error generating QR code:', error);
-                    qrContainer.innerHTML = '<div class="qr-error">QR code failed to generate</div>';
+                    qrContainer.innerHTML = '<div class="qr-error">QR code failed to generate: ' + error.message + '</div>';
                 }
-            } else {
-                // QRCode library not loaded, try again after delay
-                setTimeout(() => {
-                    if (typeof QRCode !== 'undefined') {
-                        generateQRCode(elementId, url);
-                    } else {
-                        qrContainer.innerHTML = '<div class="qr-error">QR code library not available</div>';
-                    }
-                }, 1000);
             }
+
+            // Start QR generation with retry logic
+            createQR();
         }
 
         function downloadQRCode(canvas, url) {
@@ -925,6 +931,16 @@
                 closeModal();
             }
         }
+
+        // Initialize page when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            checkRoute();
+        });
+
+        // Handle hash changes for navigation
+        window.addEventListener('hashchange', function() {
+            checkRoute();
+        });
     </script>
 </body>
 </html>
