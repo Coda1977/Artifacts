@@ -726,10 +726,16 @@
         
         function checkRoute() {
             const hash = window.location.hash.substring(1);
-            
+
             if (hash) {
-                // Show specific artifact
-                showArtifact(hash);
+                // Check if hash contains encoded data (new format) or just ID (old format)
+                if (hash.startsWith('data:')) {
+                    // New format: URL contains encoded artifact data
+                    showArtifactFromURL(hash);
+                } else {
+                    // Old format: Show artifact by ID from localStorage
+                    showArtifact(hash);
+                }
             } else {
                 // Show dashboard
                 showDashboard();
@@ -803,6 +809,50 @@
                 doc.close();
             }
         }
+
+        function showArtifactFromURL(encodedData) {
+            console.log('showArtifactFromURL called');
+            try {
+                // Remove 'data:' prefix and decode
+                const base64Data = encodedData.substring(5);
+                const jsonData = atob(base64Data);
+                const artifact = JSON.parse(jsonData);
+
+                console.log('Decoded artifact:', artifact.name);
+
+                document.getElementById('dashboardView').style.display = 'none';
+                document.getElementById('artifactView').style.display = 'block';
+
+                const iframe = document.getElementById('artifactFrame');
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                doc.open();
+                doc.write(artifact.code);
+                doc.close();
+            } catch (error) {
+                console.error('Failed to decode artifact from URL:', error);
+
+                // Show error page
+                document.getElementById('dashboardView').style.display = 'none';
+                document.getElementById('artifactView').style.display = 'block';
+
+                const iframe = document.getElementById('artifactFrame');
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                doc.open();
+                doc.write(`
+                    <html>
+                        <body style="font-family: Arial, sans-serif; padding: 40px; text-align: center; background: #f5f5f5;">
+                            <h1 style="color: #d32f2f;">Invalid Artifact URL</h1>
+                            <p style="font-size: 1.2rem; margin: 20px 0;">The artifact URL appears to be corrupted or invalid.</p>
+                            <p style="color: #666;">Please check the URL and try again.</p>
+                            <p style="margin-top: 30px;">
+                                <button onclick="window.close()" style="padding: 10px 20px; font-size: 1rem; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer;">Close</button>
+                            </p>
+                        </body>
+                    </html>
+                `);
+                doc.close();
+            }
+        }
         
         function renderArtifacts() {
             const grid = document.getElementById('artifactsGrid');
@@ -817,7 +867,19 @@
             updateCategoryFilter();
 
             artifacts.forEach((artifact, index) => {
-                const artifactUrl = `${baseUrl}#${artifact.id}`;
+                // Generate shareable URL with embedded artifact data
+                const artifactData = {
+                    name: artifact.name,
+                    description: artifact.description,
+                    code: artifact.code,
+                    category: artifact.category
+                };
+                const jsonData = JSON.stringify(artifactData);
+                const base64Data = btoa(jsonData);
+                const shareableUrl = `${baseUrl}#data:${base64Data}`;
+
+                // Also keep the old ID-based URL for dashboard use
+                const localUrl = `${baseUrl}#${artifact.id}`;
 
                 const card = document.createElement('div');
                 card.className = 'artifact-card';
@@ -830,7 +892,7 @@
                     <h2>${artifact.name}</h2>
                     ${artifact.category ? `<div class="artifact-category">${artifact.category}</div>` : ''}
                     <p>${artifact.description}</p>
-                    <div class="artifact-url">${artifactUrl}</div>
+                    <div class="artifact-url">${shareableUrl}</div>
                     <div class="preview-container">
                         <button class="preview-toggle" onclick="togglePreview(${index})">👁️ Preview</button>
                         <div class="preview-frame" id="preview-${index}" style="display: none;">
@@ -842,15 +904,15 @@
                     </div>
                     <div class="buttons">
                         <a href="#${artifact.id}" class="btn btn-primary">Open Artifact</a>
-                        <button onclick="copyUrl('${artifactUrl}')" class="btn btn-secondary">📋 Copy URL</button>
-                        <button onclick="shareArtifact('${artifactUrl}', '${artifact.name.replace(/'/g, "\\'")}', '${artifact.description.replace(/'/g, "\\'")}')}" class="btn btn-tertiary">📤 Share</button>
+                        <button onclick="copyUrl('${shareableUrl.replace(/'/g, "\\'")}' )" class="btn btn-secondary">📋 Copy URL</button>
+                        <button onclick="shareArtifact('${shareableUrl.replace(/'/g, "\\'")}', '${artifact.name.replace(/'/g, "\\'")}', '${artifact.description.replace(/'/g, "\\'")}'))" class="btn btn-tertiary">📤 Share</button>
                     </div>
                 `;
 
                 grid.appendChild(card);
 
                 // Generate QR code after the element is in DOM
-                setTimeout(() => generateQRCode(`qr-${index}`, artifactUrl), 500);
+                setTimeout(() => generateQRCode(`qr-${index}`, shareableUrl), 500);
             });
         }
 
