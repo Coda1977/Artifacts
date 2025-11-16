@@ -612,13 +612,20 @@
         // Keeping for backward compatibility but using DOMContentLoaded below
         
         function checkRoute() {
-            const hash = window.location.hash.substring(1);
+            // Check for shared artifact first (cross-device)
+            const urlParams = new URLSearchParams(window.location.search);
+            const sharedData = urlParams.get('share');
 
+            if (sharedData) {
+                showSharedArtifact(sharedData);
+                return;
+            }
+
+            // Check for local artifact (same device)
+            const hash = window.location.hash.substring(1);
             if (hash) {
-                // Show artifact by ID from localStorage
                 showArtifact(hash);
             } else {
-                // Show dashboard
                 showDashboard();
             }
         }
@@ -691,7 +698,42 @@
             }
         }
 
-        
+        function showSharedArtifact(encodedData) {
+            try {
+                // Decode shared artifact data
+                const decodedData = atob(encodedData);
+                const artifact = JSON.parse(decodedData);
+
+                document.getElementById('dashboardView').style.display = 'none';
+                document.getElementById('artifactView').style.display = 'block';
+
+                const iframe = document.getElementById('artifactFrame');
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                doc.open();
+                doc.write(artifact.code);
+                doc.close();
+            } catch (error) {
+                // Show error if shared data is corrupted
+                document.getElementById('dashboardView').style.display = 'none';
+                document.getElementById('artifactView').style.display = 'block';
+
+                const iframe = document.getElementById('artifactFrame');
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                doc.open();
+                doc.write(`
+                    <html>
+                        <body style="font-family: Arial, sans-serif; padding: 40px; text-align: center; background: #f5f5f5;">
+                            <h1 style="color: #d32f2f;">Invalid Share Link</h1>
+                            <p style="font-size: 1.2rem; margin: 20px 0;">This share link appears to be corrupted or invalid.</p>
+                            <p style="color: #666;">Please ask for a new share link.</p>
+                        </body>
+                    </html>
+                `);
+                doc.close();
+            }
+        }
+
+
         function renderArtifacts() {
             const grid = document.getElementById('artifactsGrid');
             const baseUrl = window.location.origin + window.location.pathname;
@@ -705,8 +747,14 @@
             updateCategoryFilter();
 
             artifacts.forEach((artifact, index) => {
-                // Simple shareable URL using artifact ID
-                const shareableUrl = `${baseUrl}#${artifact.id}`;
+                // Create shareable URL with embedded data for cross-device sharing
+                const artifactData = {
+                    name: artifact.name,
+                    code: artifact.code,
+                    description: artifact.description
+                };
+                const encodedData = btoa(JSON.stringify(artifactData));
+                const shareableUrl = `${baseUrl}?share=${encodedData}`;
 
                 const card = document.createElement('div');
                 card.className = 'artifact-card';
