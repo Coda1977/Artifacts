@@ -573,8 +573,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="artifactCode">Artifact Code (HTML)</label>
-                    <textarea id="artifactCode" required placeholder="Paste your Claude artifact code here..."></textarea>
+                    <label for="artifactCode">Claude Artifact Code</label>
+                    <textarea id="artifactCode" required placeholder="Paste the complete HTML code from your Claude artifact here. This should start with <!DOCTYPE html> and contain all the code Claude generated for your interactive tool."></textarea>
                 </div>
 
                 <div class="form-actions">
@@ -587,130 +587,20 @@
     
     <script>
         // Alternative QR Code generation using QR Server API with fallbacks
-        function generateQRCodeWithAPI(elementId, url) {
-            console.log('Generating QR code using QR API for:', url);
+        // Simple QR code generation
+        function generateQRCode(elementId, url) {
             const qrContainer = document.getElementById(elementId);
+            if (!qrContainer) return;
 
-            if (!qrContainer) {
-                console.error('QR container not found:', elementId);
-                return;
-            }
+            // Use a single reliable QR service
+            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`;
 
-            qrContainer.innerHTML = '<div style="color: blue; font-size: 12px;">Generating QR code via API...</div>';
-
-            // List of QR API services to try
-            const qrServices = [
-                `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`,
-                `https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${encodeURIComponent(url)}`,
-                `https://quickchart.io/qr?text=${encodeURIComponent(url)}&size=150`
-            ];
-
-            let currentServiceIndex = 0;
-
-            function tryNextService() {
-                if (currentServiceIndex >= qrServices.length) {
-                    console.error('All QR services failed, using fallback');
-                    generateQRCodeInline(elementId, url);
-                    return;
-                }
-
-                const qrApiUrl = qrServices[currentServiceIndex];
-                console.log(`Trying QR service ${currentServiceIndex + 1}:`, qrApiUrl);
-
-                const img = document.createElement('img');
-                img.src = qrApiUrl;
-                img.alt = 'QR Code';
-                img.style.display = 'block';
-                img.style.margin = '10px auto';
-                img.style.border = '1px solid #e0e0e0';
-                img.style.borderRadius = '4px';
-
-                img.onload = () => {
-                    console.log(`QR code generated successfully via service ${currentServiceIndex + 1}`);
-                    qrContainer.innerHTML = '';
-                    qrContainer.appendChild(img);
-
-                    // Add download button
-                    const downloadBtn = document.createElement('button');
-                    downloadBtn.className = 'qr-download-btn';
-                    downloadBtn.innerHTML = '📥 Save QR';
-                    downloadBtn.onclick = () => downloadQRCodeImage(qrApiUrl, url);
-                    qrContainer.appendChild(downloadBtn);
-                };
-
-                img.onerror = () => {
-                    console.log(`QR service ${currentServiceIndex + 1} failed, trying next...`);
-                    currentServiceIndex++;
-                    tryNextService();
-                };
-
-                // Set timeout for slow loading services
-                setTimeout(() => {
-                    if (!img.complete) {
-                        console.log(`QR service ${currentServiceIndex + 1} timeout, trying next...`);
-                        currentServiceIndex++;
-                        tryNextService();
-                    }
-                }, 5000); // 5 second timeout
-            }
-
-            try {
-                tryNextService();
-            } catch (error) {
-                console.error('QR API generation failed:', error);
-                generateQRCodeInline(elementId, url);
-            }
-        }
-
-        // Fallback: Generate QR code using inline SVG (simplified)
-        function generateQRCodeInline(elementId, url) {
-            console.log('Generating QR code inline for:', url);
-            const qrContainer = document.getElementById(elementId);
-
-            if (!qrContainer) {
-                console.error('QR container not found:', elementId);
-                return;
-            }
-
-            // For now, create a simple link as ultimate fallback
             qrContainer.innerHTML = `
-                <div style="text-align: center; padding: 20px; border: 1px solid #e0e0e0; border-radius: 4px;">
-                    <div style="margin-bottom: 10px; color: #666; font-size: 0.9rem;">QR Code Service Unavailable</div>
-                    <div style="margin-bottom: 10px;">
-                        <a href="${url}" target="_blank" style="color: #333; text-decoration: none; font-weight: 500;">🔗 Direct Link</a>
-                    </div>
-                    <button class="qr-download-btn" onclick="copyUrl('${url}')">📋 Copy URL</button>
+                <div style="text-align: center;">
+                    <img src="${qrApiUrl}" alt="QR Code" style="display: block; margin: 10px auto; border: 1px solid #e0e0e0; border-radius: 4px;">
+                    <button class="qr-download-btn" onclick="copyUrl('${url.replace(/'/g, "\\'")}')">📋 Copy URL</button>
                 </div>
             `;
-        }
-
-        // Download QR code image
-        function downloadQRCodeImage(imageUrl, originalUrl) {
-            try {
-                const link = document.createElement('a');
-                const fileName = `qr-code-${originalUrl.split('#')[1] || 'artifact'}.png`;
-                link.download = fileName;
-                link.href = imageUrl;
-                link.target = '_blank';
-                link.click();
-            } catch (error) {
-                console.error('Download failed:', error);
-                // Fallback: copy URL instead
-                copyUrl(originalUrl);
-                showNotification('Download failed, URL copied instead', 'info');
-            }
-        }
-
-        // Main QR generation function (updated)
-        function generateQRCode(elementId, url) {
-            console.log('generateQRCode called with:', elementId, url);
-            generateQRCodeWithAPI(elementId, url);
-        }
-
-        // Remove old library loading functions - no longer needed
-        function ensureQRCodeLibrary() {
-            // No-op: we're using API now
-            return Promise.resolve();
         }
     </script>
     <script>
@@ -725,14 +615,8 @@
             const hash = window.location.hash.substring(1);
 
             if (hash) {
-                // Check if hash contains encoded data (new format) or just ID (old format)
-                if (hash.startsWith('data:')) {
-                    // New format: URL contains encoded artifact data
-                    showArtifactFromURL(hash);
-                } else {
-                    // Old format: Show artifact by ID from localStorage
-                    showArtifact(hash);
-                }
+                // Show artifact by ID from localStorage
+                showArtifact(hash);
             } else {
                 // Show dashboard
                 showDashboard();
@@ -807,52 +691,6 @@
             }
         }
 
-        function showArtifactFromURL(encodedData) {
-            console.log('showArtifactFromURL called');
-            try {
-                // Remove 'data:' prefix and decode (Unicode-safe)
-                const base64Data = encodedData.substring(5);
-                const decodedData = atob(base64Data);
-                const jsonData = decodeURIComponent(Array.prototype.map.call(decodedData, function(c) {
-                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                }).join(''));
-                const artifact = JSON.parse(jsonData);
-
-                console.log('Decoded artifact:', artifact.name);
-
-                document.getElementById('dashboardView').style.display = 'none';
-                document.getElementById('artifactView').style.display = 'block';
-
-                const iframe = document.getElementById('artifactFrame');
-                const doc = iframe.contentDocument || iframe.contentWindow.document;
-                doc.open();
-                doc.write(artifact.code);
-                doc.close();
-            } catch (error) {
-                console.error('Failed to decode artifact from URL:', error);
-
-                // Show error page
-                document.getElementById('dashboardView').style.display = 'none';
-                document.getElementById('artifactView').style.display = 'block';
-
-                const iframe = document.getElementById('artifactFrame');
-                const doc = iframe.contentDocument || iframe.contentWindow.document;
-                doc.open();
-                doc.write(`
-                    <html>
-                        <body style="font-family: Arial, sans-serif; padding: 40px; text-align: center; background: #f5f5f5;">
-                            <h1 style="color: #d32f2f;">Invalid Artifact URL</h1>
-                            <p style="font-size: 1.2rem; margin: 20px 0;">The artifact URL appears to be corrupted or invalid.</p>
-                            <p style="color: #666;">Please check the URL and try again.</p>
-                            <p style="margin-top: 30px;">
-                                <button onclick="window.close()" style="padding: 10px 20px; font-size: 1rem; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer;">Close</button>
-                            </p>
-                        </body>
-                    </html>
-                `);
-                doc.close();
-            }
-        }
         
         function renderArtifacts() {
             const grid = document.getElementById('artifactsGrid');
@@ -867,22 +705,8 @@
             updateCategoryFilter();
 
             artifacts.forEach((artifact, index) => {
-                // Generate shareable URL with embedded artifact data
-                const artifactData = {
-                    name: artifact.name,
-                    description: artifact.description,
-                    code: artifact.code,
-                    category: artifact.category
-                };
-                const jsonData = JSON.stringify(artifactData);
-                // Unicode-safe base64 encoding
-                const base64Data = btoa(encodeURIComponent(jsonData).replace(/%([0-9A-F]{2})/g, function(match, p1) {
-                    return String.fromCharCode('0x' + p1);
-                }));
-                const shareableUrl = `${baseUrl}#data:${base64Data}`;
-
-                // Also keep the old ID-based URL for dashboard use
-                const localUrl = `${baseUrl}#${artifact.id}`;
+                // Simple shareable URL using artifact ID
+                const shareableUrl = `${baseUrl}#${artifact.id}`;
 
                 const card = document.createElement('div');
                 card.className = 'artifact-card';
@@ -899,7 +723,7 @@
                     <div class="preview-container">
                         <button class="preview-toggle" onclick="togglePreview(${index})">👁️ Preview</button>
                         <div class="preview-frame" id="preview-${index}" style="display: none;">
-                            <iframe srcdoc="${artifact.code.replace(/"/g, '&quot;')}" sandbox="allow-scripts allow-same-origin" title="Artifact Preview"></iframe>
+                            <iframe srcdoc="${artifact.code.replace(/"/g, '&quot;')}" sandbox="allow-scripts" title="Artifact Preview"></iframe>
                         </div>
                     </div>
                     <div class="qr-code" id="qr-${index}">
