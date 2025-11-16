@@ -584,7 +584,70 @@
         </div>
     </div>
     
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script>
+        // Load QRCode library with fallback options
+        function loadQRCodeLibrary() {
+            return new Promise((resolve, reject) => {
+                // Check if already loaded
+                if (typeof QRCode !== 'undefined') {
+                    console.log('QRCode library already available');
+                    resolve();
+                    return;
+                }
+
+                console.log('Loading QRCode library...');
+
+                // Try primary CDN
+                const script1 = document.createElement('script');
+                script1.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+                script1.onload = () => {
+                    console.log('QRCode library loaded successfully from jsdelivr');
+                    resolve();
+                };
+                script1.onerror = () => {
+                    console.log('Primary CDN failed, trying fallback...');
+                    document.head.removeChild(script1);
+
+                    // Try fallback CDN
+                    const script2 = document.createElement('script');
+                    script2.src = 'https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js';
+                    script2.onload = () => {
+                        console.log('QRCode library loaded successfully from unpkg');
+                        resolve();
+                    };
+                    script2.onerror = () => {
+                        console.log('Fallback CDN also failed, trying direct GitHub...');
+                        document.head.removeChild(script2);
+
+                        // Try GitHub CDN as last resort
+                        const script3 = document.createElement('script');
+                        script3.src = 'https://raw.githubusercontent.com/soldair/node-qrcode/master/build/qrcode.min.js';
+                        script3.onload = () => {
+                            console.log('QRCode library loaded from GitHub');
+                            resolve();
+                        };
+                        script3.onerror = () => {
+                            console.error('All CDNs failed to load QRCode library');
+                            reject(new Error('QRCode library could not be loaded from any CDN'));
+                        };
+                        document.head.appendChild(script3);
+                    };
+                    document.head.appendChild(script2);
+                };
+                document.head.appendChild(script1);
+            });
+        }
+
+        // Initialize QRCode library loading
+        let qrLibraryPromise = null;
+
+        function ensureQRCodeLibrary() {
+            if (!qrLibraryPromise) {
+                qrLibraryPromise = loadQRCodeLibrary();
+            }
+            return qrLibraryPromise;
+        }
+    </script>
     <script>
         // Initialize artifacts from localStorage or use defaults
         let artifacts = JSON.parse(localStorage.getItem('artifacts')) || [];
@@ -697,28 +760,21 @@
                 return;
             }
 
-            console.log('QR container found:', qrContainer);
+            console.log('QR container found, ensuring QRCode library...');
+            qrContainer.innerHTML = '<div style="color: blue; font-size: 12px;">Loading QR library...</div>';
 
-            function createQR() {
-                console.log('Checking QRCode library availability...');
-                if (typeof QRCode === 'undefined') {
-                    console.log('QRCode library not loaded yet, retrying in 100ms...');
-                    setTimeout(createQR, 100);
-                    return;
-                }
-
-                console.log('QRCode library available, proceeding with generation...');
-
-                try {
-                    // Clear loading message but keep debug info
-                    qrContainer.innerHTML = '<div style="color: blue; font-size: 12px;">Library loaded, generating...</div>';
+            // Use promise-based loading
+            ensureQRCodeLibrary()
+                .then(() => {
+                    console.log('QRCode library confirmed loaded, generating QR...');
+                    qrContainer.innerHTML = '<div style="color: green; font-size: 12px;">Library loaded, generating QR...</div>';
 
                     // Create canvas
                     const canvas = document.createElement('canvas');
                     canvas.style.display = 'block';
                     canvas.style.margin = '10px auto';
 
-                    console.log('About to call QRCode.toCanvas for URL:', url);
+                    console.log('Calling QRCode.toCanvas for URL:', url);
 
                     QRCode.toCanvas(canvas, url, {
                         width: 150,
@@ -729,10 +785,10 @@
                         }
                     }, (error) => {
                         if (error) {
-                            console.error('QR Code generation callback error:', error);
+                            console.error('QR Code generation error:', error);
                             qrContainer.innerHTML = '<div class="qr-error">QR generation failed: ' + error.message + '</div>';
                         } else {
-                            console.log('QR code generation completed successfully!');
+                            console.log('QR code generated successfully!');
 
                             // Clear container and add canvas
                             qrContainer.innerHTML = '';
@@ -745,17 +801,14 @@
                             downloadBtn.onclick = () => downloadQRCode(canvas, url);
                             qrContainer.appendChild(downloadBtn);
 
-                            console.log('QR code and download button added to container');
+                            console.log('QR code successfully added to DOM');
                         }
                     });
-                } catch (syncError) {
-                    console.error('Synchronous error in QR generation:', syncError);
-                    qrContainer.innerHTML = '<div class="qr-error">Sync error: ' + syncError.message + '</div>';
-                }
-            }
-
-            // Start QR generation with retry logic
-            createQR();
+                })
+                .catch((error) => {
+                    console.error('Failed to load QRCode library:', error);
+                    qrContainer.innerHTML = '<div class="qr-error">Could not load QR library: ' + error.message + '</div>';
+                });
         }
 
         function downloadQRCode(canvas, url) {
@@ -1095,6 +1148,14 @@
 
         // Initialize page when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, starting QR library preload and page initialization...');
+
+            // Start loading QR library immediately
+            ensureQRCodeLibrary()
+                .then(() => console.log('QR library preloaded successfully'))
+                .catch(err => console.error('QR library preload failed:', err));
+
+            // Initialize the page
             checkRoute();
         });
 
