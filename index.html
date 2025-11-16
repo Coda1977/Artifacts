@@ -13,142 +13,334 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #ffffff;
             min-height: 100vh;
+            color: #333;
         }
         
         /* Dashboard Styles */
         .dashboard {
-            padding: 40px 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
+            padding: 60px 40px;
+            max-width: 1400px;
             margin: 0 auto;
         }
-        
+
+        .container {
+            max-width: 100%;
+        }
+
         header {
             text-align: center;
-            color: white;
-            margin-bottom: 50px;
+            color: #333;
+            margin-bottom: 60px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 30px;
         }
-        
+
         header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            font-weight: 700;
+            font-size: 2.8rem;
+            margin-bottom: 12px;
+            font-weight: 300;
+            letter-spacing: -1px;
         }
-        
+
         header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
+            font-size: 1.2rem;
+            opacity: 0.7;
+            font-weight: 300;
         }
         
         .add-new-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid white;
+            background: #333;
+            border: 1px solid #333;
             color: white;
-            padding: 15px 30px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            border-radius: 8px;
+            padding: 16px 32px;
+            font-size: 1rem;
+            font-weight: 400;
+            border-radius: 2px;
             cursor: pointer;
-            margin: 0 auto 40px;
+            margin: 0 auto 50px;
             display: block;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        
+
         .add-new-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
+            background: white;
+            color: #333;
+            border-color: #333;
+        }
+
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 50px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        #searchInput {
+            flex: 1;
+            padding: 12px 16px;
+            font-size: 1rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 2px;
+            background: white;
+            color: #333;
+            transition: all 0.2s ease;
+        }
+
+        #categoryFilter {
+            padding: 12px 16px;
+            font-size: 1rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 2px;
+            background: white;
+            color: #333;
+            transition: all 0.2s ease;
+            min-width: 160px;
+        }
+
+        #categoryFilter option {
+            background: white;
+            color: #333;
+        }
+
+        #searchInput::placeholder {
+            color: #999;
+        }
+
+        #searchInput:focus, #categoryFilter:focus {
+            outline: none;
+            border-color: #333;
         }
         
         .artifacts-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 1px;
+            background: #f5f5f5;
         }
-        
+
         .artifact-card {
             background: white;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transition: transform 0.3s ease;
+            border-radius: 0;
+            padding: 40px;
+            box-shadow: none;
+            border: 1px solid #e0e0e0;
+            transition: all 0.2s ease;
             position: relative;
         }
-        
+
         .artifact-card:hover {
-            transform: translateY(-5px);
+            background: #fafafa;
+            border-color: #333;
         }
         
         .artifact-card h2 {
             color: #333;
-            margin-bottom: 15px;
-            font-size: 1.5rem;
+            margin-bottom: 8px;
+            font-size: 1.4rem;
+            font-weight: 300;
             padding-right: 60px;
+            letter-spacing: -0.5px;
         }
-        
+
         .artifact-card p {
             color: #666;
             margin-bottom: 20px;
-            line-height: 1.6;
+            line-height: 1.5;
+            font-size: 0.95rem;
         }
         
         .artifact-url {
-            background: #f5f5f5;
-            padding: 10px 15px;
-            border-radius: 6px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.85rem;
-            color: #667eea;
-            margin-bottom: 20px;
+            background: #f9f9f9;
+            padding: 12px 16px;
+            border-radius: 0;
+            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 25px;
             word-break: break-all;
+            border: 1px solid #f0f0f0;
         }
         
         .qr-code {
             text-align: center;
-            margin: 20px 0;
-            padding: 15px;
+            margin: 25px 0;
+            padding: 20px;
             background: #fafafa;
-            border-radius: 8px;
+            border-radius: 0;
+            border: 1px solid #f0f0f0;
+        }
+
+        .qr-loading {
+            color: #666;
+            font-style: italic;
+            padding: 20px;
+        }
+
+        .qr-error {
+            color: #d32f2f;
+            font-size: 0.9rem;
+            padding: 20px;
+        }
+
+        .qr-download-btn {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            padding: 8px 16px;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-top: 15px;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .qr-download-btn:hover {
+            background: #333;
+            color: white;
+        }
+
+        /* Notification styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            border-radius: 6px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification-success {
+            background: #4CAF50;
+        }
+
+        .notification-info {
+            background: #2196F3;
+        }
+
+        .notification-error {
+            background: #f44336;
+        }
+
+        /* Category and Preview styles */
+        .artifact-category {
+            background: #f5f5f5;
+            color: #333;
+            padding: 4px 12px;
+            border-radius: 0;
+            font-size: 0.75rem;
+            font-weight: 400;
+            display: inline-block;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .preview-container {
+            margin: 15px 0;
+        }
+
+        .preview-toggle {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            padding: 8px 16px;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .preview-toggle:hover {
+            background: #333;
+            color: white;
+        }
+
+        .preview-frame {
+            border: 1px solid #e0e0e0;
+            border-radius: 0;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .preview-frame iframe {
+            width: 100%;
+            height: 200px;
+            border: none;
+            background: white;
         }
         
         .buttons {
             display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+            gap: 1px;
+            margin-top: 25px;
         }
-        
+
         .btn {
             flex: 1;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.95rem;
-            font-weight: 600;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 0;
+            font-size: 0.8rem;
+            font-weight: 400;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             text-decoration: none;
             text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        
+
         .btn-primary {
-            background: #667eea;
+            background: #333;
             color: white;
+            border-color: #333;
         }
-        
+
         .btn-primary:hover {
-            background: #5568d3;
-        }
-        
-        .btn-secondary {
-            background: #e0e0e0;
+            background: white;
             color: #333;
         }
-        
+
+        .btn-secondary {
+            background: white;
+            color: #333;
+            border-color: #e0e0e0;
+        }
+
         .btn-secondary:hover {
-            background: #d0d0d0;
+            background: #333;
+            color: white;
+        }
+
+        .btn-tertiary {
+            background: white;
+            color: #333;
+            border-color: #e0e0e0;
+        }
+
+        .btn-tertiary:hover {
+            background: #333;
+            color: white;
         }
         
         .btn-danger {
@@ -165,38 +357,34 @@
             top: 20px;
             right: 20px;
             display: flex;
-            gap: 10px;
+            gap: 2px;
         }
-        
+
         .icon-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 0;
+            border: 1px solid #e0e0e0;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
-            font-size: 18px;
-        }
-        
-        .icon-btn.edit {
-            background: #e3f2fd;
-            color: #1976d2;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            background: white;
+            color: #666;
         }
         
         .icon-btn.edit:hover {
-            background: #bbdefb;
+            background: #333;
+            color: white;
+            border-color: #333;
         }
-        
-        .icon-btn.delete {
-            background: #ffebee;
-            color: #d32f2f;
-        }
-        
+
         .icon-btn.delete:hover {
-            background: #ffcdd2;
+            background: #333;
+            color: white;
+            border-color: #333;
         }
         
         /* Artifact View Styles */
@@ -317,7 +505,14 @@
             </header>
             
             <button class="add-new-btn" onclick="openAddModal()">+ Add New Artifact</button>
-            
+
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="🔍 Search artifacts..." oninput="searchArtifacts()">
+                <select id="categoryFilter" onchange="filterByCategory()">
+                    <option value="">All Categories</option>
+                </select>
+            </div>
+
             <div class="artifacts-grid" id="artifactsGrid">
                 <!-- Artifact cards will be generated here -->
             </div>
@@ -346,6 +541,11 @@
                 <div class="form-group">
                     <label for="artifactDescription">Description</label>
                     <input type="text" id="artifactDescription" required placeholder="Brief description of what this artifact does">
+                </div>
+
+                <div class="form-group">
+                    <label for="artifactCategory">Category</label>
+                    <input type="text" id="artifactCategory" placeholder="e.g., Games, Tools, Education (optional)">
                 </div>
 
                 <div class="form-group">
@@ -420,11 +620,12 @@
             const baseUrl = window.location.origin + window.location.pathname;
 
             if (artifacts.length === 0) {
-                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: white; padding: 60px; font-size: 1.2rem;">No artifacts yet. Click "Add New Artifact" to get started!</div>';
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #999; padding: 80px; font-size: 1.1rem; font-weight: 300; letter-spacing: 0.5px;">No artifacts yet. Click "ADD NEW ARTIFACT" to get started.</div>';
                 return;
             }
 
             grid.innerHTML = '';
+            updateCategoryFilter();
 
             artifacts.forEach((artifact, index) => {
                 const artifactUrl = `${baseUrl}#${artifact.id}`;
@@ -432,36 +633,93 @@
                 const card = document.createElement('div');
                 card.className = 'artifact-card';
 
-                // Create QR code canvas with error handling
-                const qrCanvas = document.createElement('canvas');
-                try {
-                    if (typeof QRCode !== 'undefined') {
-                        QRCode.toCanvas(qrCanvas, artifactUrl, { width: 150, margin: 1 });
-                    } else {
-                        console.warn('QRCode library not loaded');
-                    }
-                } catch (error) {
-                    console.error('Error generating QR code:', error);
-                }
-
                 card.innerHTML = `
                     <div class="card-actions">
                         <button class="icon-btn edit" onclick="editArtifact(${index})" title="Edit">✏️</button>
                         <button class="icon-btn delete" onclick="deleteArtifact(${index})" title="Delete">🗑️</button>
                     </div>
                     <h2>${artifact.name}</h2>
+                    ${artifact.category ? `<div class="artifact-category">${artifact.category}</div>` : ''}
                     <p>${artifact.description}</p>
                     <div class="artifact-url">${artifactUrl}</div>
-                    <div class="qr-code"></div>
+                    <div class="preview-container">
+                        <button class="preview-toggle" onclick="togglePreview(${index})">👁️ Preview</button>
+                        <div class="preview-frame" id="preview-${index}" style="display: none;">
+                            <iframe srcdoc="${artifact.code.replace(/"/g, '&quot;')}" sandbox="allow-scripts allow-same-origin" title="Artifact Preview"></iframe>
+                        </div>
+                    </div>
+                    <div class="qr-code" id="qr-${index}">
+                        <div class="qr-loading">Generating QR code...</div>
+                    </div>
                     <div class="buttons">
                         <a href="#${artifact.id}" class="btn btn-primary">Open Artifact</a>
-                        <button onclick="copyUrl('${artifactUrl}')" class="btn btn-secondary">Copy URL</button>
+                        <button onclick="copyUrl('${artifactUrl}')" class="btn btn-secondary">📋 Copy URL</button>
+                        <button onclick="shareArtifact('${artifactUrl}', '${artifact.name.replace(/'/g, "\\'")}', '${artifact.description.replace(/'/g, "\\'")}')}" class="btn btn-tertiary">📤 Share</button>
                     </div>
                 `;
 
-                card.querySelector('.qr-code').appendChild(qrCanvas);
                 grid.appendChild(card);
+
+                // Generate QR code after the element is in DOM
+                setTimeout(() => generateQRCode(`qr-${index}`, artifactUrl), 100);
             });
+        }
+
+        function generateQRCode(elementId, url) {
+            const qrContainer = document.getElementById(elementId);
+            if (!qrContainer) return;
+
+            if (typeof QRCode !== 'undefined') {
+                try {
+                    // Clear loading message
+                    qrContainer.innerHTML = '';
+
+                    // Create canvas
+                    const canvas = document.createElement('canvas');
+                    QRCode.toCanvas(canvas, url, {
+                        width: 150,
+                        margin: 1,
+                        color: {
+                            dark: '#000000',
+                            light: '#FFFFFF'
+                        }
+                    }, (error) => {
+                        if (error) {
+                            console.error('QR Code generation error:', error);
+                            qrContainer.innerHTML = '<div class="qr-error">QR code failed to generate</div>';
+                        } else {
+                            qrContainer.appendChild(canvas);
+
+                            // Add download button
+                            const downloadBtn = document.createElement('button');
+                            downloadBtn.className = 'qr-download-btn';
+                            downloadBtn.innerHTML = '📥 Save QR';
+                            downloadBtn.onclick = () => downloadQRCode(canvas, url);
+                            qrContainer.appendChild(downloadBtn);
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error generating QR code:', error);
+                    qrContainer.innerHTML = '<div class="qr-error">QR code failed to generate</div>';
+                }
+            } else {
+                // QRCode library not loaded, try again after delay
+                setTimeout(() => {
+                    if (typeof QRCode !== 'undefined') {
+                        generateQRCode(elementId, url);
+                    } else {
+                        qrContainer.innerHTML = '<div class="qr-error">QR code library not available</div>';
+                    }
+                }, 1000);
+            }
+        }
+
+        function downloadQRCode(canvas, url) {
+            const link = document.createElement('a');
+            const fileName = `qr-code-${url.split('#')[1] || 'artifact'}.png`;
+            link.download = fileName;
+            link.href = canvas.toDataURL();
+            link.click();
         }
         
         function openAddModal() {
@@ -469,6 +727,7 @@
             document.getElementById('modalTitle').textContent = 'Add New Artifact';
             document.getElementById('artifactName').value = '';
             document.getElementById('artifactDescription').value = '';
+            document.getElementById('artifactCategory').value = '';
             document.getElementById('artifactCode').value = '';
             document.getElementById('artifactModal').style.display = 'block';
         }
@@ -479,6 +738,7 @@
             document.getElementById('modalTitle').textContent = 'Edit Artifact';
             document.getElementById('artifactName').value = artifact.name;
             document.getElementById('artifactDescription').value = artifact.description;
+            document.getElementById('artifactCategory').value = artifact.category || '';
             document.getElementById('artifactCode').value = artifact.code;
             document.getElementById('artifactModal').style.display = 'block';
         }
@@ -494,12 +754,14 @@
             try {
                 const name = document.getElementById('artifactName').value;
                 const description = document.getElementById('artifactDescription').value;
+                const category = document.getElementById('artifactCategory').value.trim();
                 const code = document.getElementById('artifactCode').value;
 
                 const artifact = {
                     id: editingIndex !== null ? artifacts[editingIndex].id : generateId(name),
                     name: name,
                     description: description,
+                    category: category,
                     code: code
                 };
 
@@ -538,7 +800,121 @@
         
         function copyUrl(url) {
             navigator.clipboard.writeText(url).then(() => {
-                alert('URL copied to clipboard!');
+                showNotification('URL copied to clipboard! 📋', 'success');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = url;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showNotification('URL copied to clipboard! 📋', 'success');
+            });
+        }
+
+        function shareArtifact(url, title, description) {
+            if (navigator.share) {
+                navigator.share({
+                    title: title,
+                    text: description,
+                    url: url
+                });
+            } else {
+                // Fallback to copy URL if Web Share API not available
+                copyUrl(url);
+                showNotification('Use the share button to share this artifact!', 'info');
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        function togglePreview(index) {
+            const previewFrame = document.getElementById(`preview-${index}`);
+            const toggleBtn = previewFrame.previousElementSibling;
+
+            if (previewFrame.style.display === 'none') {
+                previewFrame.style.display = 'block';
+                toggleBtn.innerHTML = '👁️ Hide Preview';
+            } else {
+                previewFrame.style.display = 'none';
+                toggleBtn.innerHTML = '👁️ Preview';
+            }
+        }
+
+        function updateCategoryFilter() {
+            const categoryFilter = document.getElementById('categoryFilter');
+            const categories = new Set();
+
+            artifacts.forEach(artifact => {
+                if (artifact.category && artifact.category.trim()) {
+                    categories.add(artifact.category.trim());
+                }
+            });
+
+            // Clear existing options except "All Categories"
+            categoryFilter.innerHTML = '<option value="">All Categories</option>';
+
+            // Add unique categories
+            Array.from(categories).sort().forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categoryFilter.appendChild(option);
+            });
+        }
+
+        function filterByCategory() {
+            const selectedCategory = document.getElementById('categoryFilter').value;
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+
+            filterArtifacts(searchQuery, selectedCategory);
+        }
+
+        function searchArtifacts() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const selectedCategory = document.getElementById('categoryFilter').value;
+
+            filterArtifacts(query, selectedCategory);
+        }
+
+        function filterArtifacts(searchQuery, categoryFilter) {
+            const cards = document.querySelectorAll('.artifact-card');
+
+            cards.forEach(card => {
+                const title = card.querySelector('h2').textContent.toLowerCase();
+                const description = card.querySelector('p').textContent.toLowerCase();
+                const categoryElement = card.querySelector('.artifact-category');
+                const category = categoryElement ? categoryElement.textContent : '';
+
+                const matchesSearch = searchQuery === '' ||
+                    title.includes(searchQuery) ||
+                    description.includes(searchQuery) ||
+                    category.toLowerCase().includes(searchQuery);
+
+                const matchesCategory = categoryFilter === '' || category === categoryFilter;
+
+                if (matchesSearch && matchesCategory) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
             });
         }
         
