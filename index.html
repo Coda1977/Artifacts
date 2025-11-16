@@ -3,35 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Claude Artifacts</title>
+    <title>Claude Artifacts Dashboard</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #ffffff;
             min-height: 100vh;
             color: #333;
         }
-        
-        /* Dashboard Styles */
-        .dashboard {
-            padding: 60px 40px;
-            max-width: 1400px;
-            margin: 0 auto;
+
+        /* Authentication Styles */
+        .auth-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px;
         }
 
-        .container {
-            max-width: 100%;
+        .auth-box {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 60px;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .auth-box h1 {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+            font-weight: 300;
+            letter-spacing: -1px;
+        }
+
+        .auth-box p {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .github-btn {
+            background: #24292e;
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            font-size: 1rem;
+            font-weight: 500;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .github-btn:hover {
+            background: #0969da;
+            transform: translateY(-1px);
+        }
+
+        /* Dashboard Styles */
+        .dashboard {
+            padding: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+            display: none;
+        }
+
+        .dashboard.show {
+            display: block;
         }
 
         header {
             text-align: center;
-            color: #333;
             margin-bottom: 60px;
             border-bottom: 1px solid #e0e0e0;
             padding-bottom: 30px;
@@ -46,20 +100,55 @@
 
         header p {
             font-size: 1.2rem;
-            opacity: 0.7;
+            color: #666;
             font-weight: 300;
         }
-        
+
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #e0e0e0;
+        }
+
+        .logout-btn {
+            background: white;
+            border: 1px solid #e0e0e0;
+            color: #333;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background: #f5f5f5;
+        }
+
         .add-new-btn {
             background: #333;
-            border: 1px solid #333;
             color: white;
+            border: 1px solid #333;
             padding: 16px 32px;
             font-size: 1rem;
             font-weight: 400;
             border-radius: 2px;
             cursor: pointer;
-            margin: 0 auto 50px;
+            margin: 0 auto 40px;
             display: block;
             transition: all 0.2s ease;
             text-transform: uppercase;
@@ -69,161 +158,270 @@
         .add-new-btn:hover {
             background: white;
             color: #333;
-            border-color: #333;
         }
 
-        .backup-btn {
-            background: white;
-            border: 1px solid #333;
-            color: #333;
-            padding: 16px 32px;
-            font-size: 1rem;
-            font-weight: 400;
-            border-radius: 2px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        .loading {
+            text-align: center;
+            padding: 80px;
+            color: #666;
+            font-size: 1.1rem;
         }
 
-        .backup-btn:hover {
-            background: #333;
-            color: white;
-            border-color: #333;
-        }
-
-        .search-container {
-            max-width: 600px;
-            margin: 0 auto 50px;
-            display: flex;
-            gap: 20px;
-            align-items: center;
-        }
-
-        #searchInput {
-            flex: 1;
-            padding: 12px 16px;
-            font-size: 1rem;
-            border: 1px solid #e0e0e0;
-            border-radius: 2px;
-            background: white;
-            color: #333;
-            transition: all 0.2s ease;
-        }
-
-        #categoryFilter {
-            padding: 12px 16px;
-            font-size: 1rem;
-            border: 1px solid #e0e0e0;
-            border-radius: 2px;
-            background: white;
-            color: #333;
-            transition: all 0.2s ease;
-            min-width: 160px;
-        }
-
-        #categoryFilter option {
-            background: white;
-            color: #333;
-        }
-
-        #searchInput::placeholder {
-            color: #999;
-        }
-
-        #searchInput:focus, #categoryFilter:focus {
-            outline: none;
-            border-color: #333;
-        }
-        
         .artifacts-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-            gap: 1px;
-            background: #f5f5f5;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
         }
 
         .artifact-card {
             background: white;
-            border-radius: 0;
-            padding: 40px;
-            box-shadow: none;
             border: 1px solid #e0e0e0;
-            transition: all 0.2s ease;
+            border-radius: 8px;
+            padding: 30px;
+            transition: all 0.3s ease;
             position: relative;
         }
 
         .artifact-card:hover {
-            background: #fafafa;
-            border-color: #333;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
         }
-        
+
+        .card-actions {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #e0e0e0;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .icon-btn:hover {
+            background: #f5f5f5;
+        }
+
+        .icon-btn.delete:hover {
+            background: #ff4444;
+            color: white;
+            border-color: #ff4444;
+        }
+
         .artifact-card h2 {
-            color: #333;
-            margin-bottom: 8px;
             font-size: 1.4rem;
-            font-weight: 300;
-            padding-right: 60px;
-            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            padding-right: 80px;
         }
 
         .artifact-card p {
             color: #666;
+            line-height: 1.6;
             margin-bottom: 20px;
-            line-height: 1.5;
-            font-size: 0.95rem;
         }
-        
+
+        .artifact-meta {
+            font-size: 0.85rem;
+            color: #999;
+            margin-bottom: 20px;
+            border-top: 1px solid #f0f0f0;
+            padding-top: 15px;
+        }
+
         .artifact-url {
-            background: #f9f9f9;
-            padding: 12px 16px;
-            border-radius: 0;
-            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 12px;
+            font-family: monospace;
             font-size: 0.8rem;
-            color: #888;
-            margin-bottom: 25px;
+            color: #666;
+            margin-bottom: 20px;
             word-break: break-all;
-            border: 1px solid #f0f0f0;
         }
-        
+
         .qr-code {
             text-align: center;
-            margin: 25px 0;
-            padding: 20px;
+            margin: 20px 0;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
             background: #fafafa;
-            border-radius: 0;
-            border: 1px solid #f0f0f0;
         }
 
-        .qr-loading {
-            color: #666;
-            font-style: italic;
-            padding: 20px;
+        .buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
         }
 
-        .qr-error {
-            color: #d32f2f;
-            font-size: 0.9rem;
-            padding: 20px;
-        }
-
-        .qr-download-btn {
+        .btn {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            text-align: center;
             background: white;
             color: #333;
-            border: 1px solid #e0e0e0;
-            padding: 8px 16px;
-            border-radius: 0;
-            cursor: pointer;
-            font-size: 0.8rem;
-            margin-top: 15px;
-            transition: all 0.2s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
         }
 
-        .qr-download-btn:hover {
+        .btn:hover {
+            background: #f5f5f5;
+        }
+
+        .btn-primary {
             background: #333;
             color: white;
+            border-color: #333;
+        }
+
+        .btn-primary:hover {
+            background: #555;
+        }
+
+        /* Artifact View Styles */
+        .artifact-view {
+            display: none;
+            width: 100%;
+            height: 100vh;
+        }
+
+        .artifact-view.show {
+            display: block;
+        }
+
+        .artifact-view iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            max-width: 800px;
+            width: 100%;
+            border-radius: 8px;
+            padding: 40px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .modal-header h2 {
+            color: #333;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: #f5f5f5;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+
+        .form-group textarea {
+            font-family: 'Courier New', monospace;
+            min-height: 300px;
+            resize: vertical;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+
+        .form-actions .btn {
+            padding: 12px 24px;
+            flex: none;
         }
 
         /* Notification styles */
@@ -249,305 +447,80 @@
             background: #4CAF50;
         }
 
-        .notification-info {
-            background: #2196F3;
-        }
-
         .notification-error {
             background: #f44336;
         }
 
-        /* Category and Preview styles */
-        .artifact-category {
-            background: #f5f5f5;
-            color: #333;
-            padding: 4px 12px;
-            border-radius: 0;
-            font-size: 0.75rem;
-            font-weight: 400;
-            display: inline-block;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border: 1px solid #e0e0e0;
+        .notification-info {
+            background: #2196F3;
         }
 
-        .preview-container {
-            margin: 15px 0;
-        }
+        @media (max-width: 768px) {
+            .dashboard {
+                padding: 20px;
+            }
 
-        .preview-toggle {
-            background: white;
-            color: #333;
-            border: 1px solid #e0e0e0;
-            padding: 8px 16px;
-            border-radius: 0;
-            cursor: pointer;
-            font-size: 0.85rem;
-            margin-bottom: 15px;
-            transition: all 0.2s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+            .artifacts-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
 
-        .preview-toggle:hover {
-            background: #333;
-            color: white;
-        }
+            .artifact-card {
+                padding: 20px;
+            }
 
-        .preview-frame {
-            border: 1px solid #e0e0e0;
-            border-radius: 0;
-            overflow: hidden;
-            margin-top: 15px;
-        }
+            .modal-content {
+                padding: 30px 20px;
+            }
 
-        .preview-frame iframe {
-            width: 100%;
-            height: 200px;
-            border: none;
-            background: white;
-        }
-        
-        .buttons {
-            display: flex;
-            gap: 1px;
-            margin-top: 25px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 12px 16px;
-            border: 1px solid #e0e0e0;
-            border-radius: 0;
-            font-size: 0.8rem;
-            font-weight: 400;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-decoration: none;
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .btn-primary {
-            background: #333;
-            color: white;
-            border-color: #333;
-        }
-
-        .btn-primary:hover {
-            background: white;
-            color: #333;
-        }
-
-        .btn-secondary {
-            background: white;
-            color: #333;
-            border-color: #e0e0e0;
-        }
-
-        .btn-secondary:hover {
-            background: #333;
-            color: white;
-        }
-
-        .btn-tertiary {
-            background: white;
-            color: #333;
-            border-color: #e0e0e0;
-        }
-
-        .btn-tertiary:hover {
-            background: #333;
-            color: white;
-        }
-        
-        .btn-danger {
-            background: #f44336;
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background: #d32f2f;
-        }
-        
-        .card-actions {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            gap: 2px;
-        }
-
-        .icon-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 0;
-            border: 1px solid #e0e0e0;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            font-size: 14px;
-            background: white;
-            color: #666;
-        }
-        
-        .icon-btn.edit:hover {
-            background: #333;
-            color: white;
-            border-color: #333;
-        }
-
-        .icon-btn.delete:hover {
-            background: #333;
-            color: white;
-            border-color: #333;
-        }
-        
-        /* Artifact View Styles */
-        .artifact-view {
-            display: none;
-            width: 100%;
-            height: 100vh;
-        }
-        
-        .artifact-view iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-        
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.7);
-            z-index: 1000;
-            padding: 20px;
-            overflow-y: auto;
-        }
-        
-        .modal-content {
-            background: white;
-            max-width: 900px;
-            margin: 40px auto;
-            border-radius: 12px;
-            padding: 40px;
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-        
-        .modal-header h2 {
-            color: #333;
-            font-size: 2rem;
-        }
-        
-        .close-btn {
-            width: 40px;
-            height: 40px;
-            border: none;
-            background: #f5f5f5;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 24px;
-            color: #666;
-            transition: all 0.3s ease;
-        }
-        
-        .close-btn:hover {
-            background: #e0e0e0;
-        }
-        
-        .form-group {
-            margin-bottom: 25px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 600;
-        }
-        
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-family: inherit;
-            transition: border-color 0.3s ease;
-        }
-        
-        .form-group textarea {
-            font-family: 'Courier New', monospace;
-            min-height: 300px;
-            resize: vertical;
-        }
-        
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .form-actions {
-            display: flex;
-            gap: 15px;
-            justify-content: flex-end;
-        }
-        
-        .hidden {
-            display: none;
+            .user-info {
+                flex-direction: column;
+                gap: 20px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Dashboard View -->
-    <div id="dashboardView" class="dashboard">
-        <div class="container">
-            <header>
-                <h1>🎨 My Artifacts Dashboard</h1>
-                <p>Manage and share your workshop tools</p>
-            </header>
-            
-            <div style="display: flex; gap: 20px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap;">
-                <button class="add-new-btn" onclick="openAddModal()">+ Add New Artifact</button>
-                <button class="backup-btn" onclick="backupAllArtifacts()">📁 Backup All</button>
-                <button class="backup-btn" onclick="importArtifacts()">📂 Import Backup</button>
-            </div>
-
-            <div class="search-container">
-                <input type="text" id="searchInput" placeholder="🔍 Search artifacts..." oninput="searchArtifacts()">
-                <select id="categoryFilter" onchange="filterByCategory()">
-                    <option value="">All Categories</option>
-                </select>
-            </div>
-
-            <div class="artifacts-grid" id="artifactsGrid">
-                <!-- Artifact cards will be generated here -->
-            </div>
+    <!-- Authentication View -->
+    <div id="authView" class="auth-container">
+        <div class="auth-box">
+            <h1>🎨 Claude Artifacts</h1>
+            <p>Store, organize, and share your Claude-generated artifacts with GitHub integration. Access your collection from anywhere.</p>
+            <button class="github-btn" onclick="loginWithGitHub()">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                Sign in with GitHub
+            </button>
         </div>
     </div>
-    
+
+    <!-- Dashboard View -->
+    <div id="dashboardView" class="dashboard">
+        <div class="user-info">
+            <div class="user-profile">
+                <img id="userAvatar" class="user-avatar" src="" alt="User Avatar">
+                <span id="userName">Loading...</span>
+            </div>
+            <button class="logout-btn" onclick="logout()">Sign out</button>
+        </div>
+
+        <header>
+            <h1>🎨 My Artifacts Dashboard</h1>
+            <p>Manage and share your workshop tools</p>
+        </header>
+
+        <button class="add-new-btn" onclick="openAddModal()">+ Add New Artifact</button>
+
+        <div id="loadingMessage" class="loading">Loading your artifacts...</div>
+        <div id="artifactsGrid" class="artifacts-grid"></div>
+    </div>
+
     <!-- Artifact View -->
     <div id="artifactView" class="artifact-view">
         <iframe id="artifactFrame"></iframe>
     </div>
-    
+
     <!-- Add/Edit Modal -->
     <div id="artifactModal" class="modal">
         <div class="modal-content">
@@ -555,7 +528,7 @@
                 <h2 id="modalTitle">Add New Artifact</h2>
                 <button class="close-btn" onclick="closeModal()">&times;</button>
             </div>
-            
+
             <form id="artifactForm">
                 <div class="form-group">
                     <label for="artifactName">Artifact Name</label>
@@ -568,510 +541,379 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="artifactCategory">Category</label>
-                    <input type="text" id="artifactCategory" placeholder="e.g., Games, Tools, Education (optional)">
-                </div>
-
-                <div class="form-group">
                     <label for="artifactCode">Claude Artifact Code</label>
                     <textarea id="artifactCode" required placeholder="Paste the complete HTML code from your Claude artifact here. This should start with <!DOCTYPE html> and contain all the code Claude generated for your interactive tool."></textarea>
                 </div>
 
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="button" class="btn" onclick="closeModal()">Cancel</button>
                     <button type="submit" class="btn btn-primary">Save Artifact</button>
                 </div>
             </form>
         </div>
     </div>
-    
+
     <script>
-        // Alternative QR Code generation using QR Server API with fallbacks
-        // Simple QR code generation
-        function generateQRCode(elementId, url) {
-            const qrContainer = document.getElementById(elementId);
-            if (!qrContainer) return;
+        // GitHub API Configuration
+        const CLIENT_ID = 'Ov23liuCz5cHOgWQ6gHT'; // Replace with your GitHub OAuth App Client ID
+        const GITHUB_API_BASE = 'https://api.github.com';
 
-            // Use a single reliable QR service
-            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`;
+        // Global State
+        let currentUser = null;
+        let artifacts = [];
+        let editingArtifact = null;
 
-            qrContainer.innerHTML = `
-                <div style="text-align: center;">
-                    <img src="${qrApiUrl}" alt="QR Code" style="display: block; margin: 10px auto; border: 1px solid #e0e0e0; border-radius: 4px;">
-                    <button class="qr-download-btn" onclick="copyUrl('${url.replace(/'/g, "\\'")}')">📋 Copy URL</button>
-                </div>
-            `;
+        // Check authentication status on page load
+        function checkAuth() {
+            const token = localStorage.getItem('github_token');
+            if (token) {
+                fetchUserData(token);
+            }
         }
-    </script>
-    <script>
-        // Initialize artifacts from localStorage or use defaults
-        let artifacts = JSON.parse(localStorage.getItem('artifacts')) || [];
-        let editingIndex = null;
-        
-        // Legacy load handler (will be removed)
-        // Keeping for backward compatibility but using DOMContentLoaded below
-        
-        function checkRoute() {
-            // Check for shared artifact first (cross-device)
+
+        // GitHub OAuth Login
+        function loginWithGitHub() {
+            const redirectUri = window.location.origin + window.location.pathname;
+            const scope = 'gist';
+            const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${redirectUri}&scope=${scope}`;
+            window.location.href = githubAuthUrl;
+        }
+
+        // Handle OAuth callback
+        function handleOAuthCallback() {
             const urlParams = new URLSearchParams(window.location.search);
-            const sharedData = urlParams.get('share');
+            const code = urlParams.get('code');
 
-            if (sharedData) {
-                showSharedArtifact(sharedData);
-                return;
-            }
+            if (code) {
+                // Exchange code for token (simplified - in production use your backend)
+                // For now, we'll use GitHub's device flow or ask user to create token manually
+                showNotification('Please create a personal access token on GitHub with "gist" permissions and refresh the page.', 'info');
 
-            // Check for local artifact (same device)
-            const hash = window.location.hash.substring(1);
-            if (hash) {
-                showArtifact(hash);
-            } else {
-                showDashboard();
-            }
-        }
-        
-        function showDashboard() {
-            console.log('showDashboard called');
-
-            // Refresh artifacts from localStorage to ensure we have latest data
-            const storedArtifacts = JSON.parse(localStorage.getItem('artifacts')) || [];
-            console.log('Loading', storedArtifacts.length, 'artifacts from localStorage');
-            artifacts = storedArtifacts;
-
-            document.getElementById('dashboardView').style.display = 'block';
-            document.getElementById('artifactView').style.display = 'none';
-            renderArtifacts();
-        }
-        
-        function showArtifact(id) {
-            console.log('showArtifact called with ID:', id);
-            console.log('Available artifacts:', artifacts.length);
-
-            // Refresh artifacts from localStorage to ensure we have latest data
-            const storedArtifacts = JSON.parse(localStorage.getItem('artifacts')) || [];
-            console.log('Artifacts in localStorage:', storedArtifacts.length);
-
-            // Update the global artifacts array
-            artifacts = storedArtifacts;
-
-            const artifact = artifacts.find(a => a.id === id);
-
-            if (artifact) {
-                console.log('Artifact found:', artifact.name);
-                document.getElementById('dashboardView').style.display = 'none';
-                document.getElementById('artifactView').style.display = 'block';
-
-                const iframe = document.getElementById('artifactFrame');
-                const doc = iframe.contentDocument || iframe.contentWindow.document;
-                doc.open();
-                doc.write(artifact.code);
-                doc.close();
-            } else {
-                console.error('Artifact not found with ID:', id);
-                console.log('Available artifact IDs:', artifacts.map(a => a.id));
-
-                // Show error message instead of redirecting to dashboard
-                document.getElementById('dashboardView').style.display = 'none';
-                document.getElementById('artifactView').style.display = 'block';
-
-                const iframe = document.getElementById('artifactFrame');
-                const doc = iframe.contentDocument || iframe.contentWindow.document;
-                doc.open();
-                doc.write(`
-                    <html>
-                        <body style="font-family: Arial, sans-serif; padding: 40px; text-align: center; background: #f5f5f5;">
-                            <h1 style="color: #d32f2f;">Artifact Not Found</h1>
-                            <p style="font-size: 1.2rem; margin: 20px 0;">The requested artifact "${id}" could not be found.</p>
-                            <p style="color: #666;">This could happen if:</p>
-                            <ul style="text-align: left; max-width: 400px; margin: 20px auto;">
-                                <li>The artifact was deleted</li>
-                                <li>The URL is incorrect</li>
-                                <li>You're on a different device than where it was created</li>
-                            </ul>
-                            <p style="margin-top: 30px;">
-                                <button onclick="window.close()" style="padding: 10px 20px; font-size: 1rem; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer;">Close</button>
-                            </p>
-                        </body>
-                    </html>
-                `);
-                doc.close();
+                // Remove code from URL
+                window.history.replaceState({}, document.title, window.location.pathname);
             }
         }
 
-        function showSharedArtifact(encodedData) {
+        // Fetch user data from GitHub
+        async function fetchUserData(token) {
             try {
-                // Decode shared artifact data
-                const decodedData = atob(encodedData);
-                const artifact = JSON.parse(decodedData);
+                const response = await fetch(`${GITHUB_API_BASE}/user`, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
 
-                document.getElementById('dashboardView').style.display = 'none';
-                document.getElementById('artifactView').style.display = 'block';
+                if (!response.ok) {
+                    throw new Error('Invalid token');
+                }
 
-                const iframe = document.getElementById('artifactFrame');
-                const doc = iframe.contentDocument || iframe.contentWindow.document;
-                doc.open();
-                doc.write(artifact.code);
-                doc.close();
+                currentUser = await response.json();
+                showDashboard();
+                loadArtifacts();
             } catch (error) {
-                // Show error if shared data is corrupted
-                document.getElementById('dashboardView').style.display = 'none';
-                document.getElementById('artifactView').style.display = 'block';
-
-                const iframe = document.getElementById('artifactFrame');
-                const doc = iframe.contentDocument || iframe.contentWindow.document;
-                doc.open();
-                doc.write(`
-                    <html>
-                        <body style="font-family: Arial, sans-serif; padding: 40px; text-align: center; background: #f5f5f5;">
-                            <h1 style="color: #d32f2f;">Invalid Share Link</h1>
-                            <p style="font-size: 1.2rem; margin: 20px 0;">This share link appears to be corrupted or invalid.</p>
-                            <p style="color: #666;">Please ask for a new share link.</p>
-                        </body>
-                    </html>
-                `);
-                doc.close();
+                console.error('Auth failed:', error);
+                localStorage.removeItem('github_token');
+                showAuthView();
             }
         }
 
+        // Show authentication view
+        function showAuthView() {
+            document.getElementById('authView').style.display = 'flex';
+            document.getElementById('dashboardView').classList.remove('show');
+            document.getElementById('artifactView').classList.remove('show');
+        }
 
+        // Show dashboard
+        function showDashboard() {
+            document.getElementById('authView').style.display = 'none';
+            document.getElementById('dashboardView').classList.add('show');
+            document.getElementById('artifactView').classList.remove('show');
+
+            if (currentUser) {
+                document.getElementById('userName').textContent = currentUser.login;
+                document.getElementById('userAvatar').src = currentUser.avatar_url;
+            }
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('github_token');
+            currentUser = null;
+            artifacts = [];
+            showAuthView();
+        }
+
+        // Load artifacts from GitHub gists
+        async function loadArtifacts() {
+            const token = localStorage.getItem('github_token');
+            if (!token) return;
+
+            try {
+                document.getElementById('loadingMessage').style.display = 'block';
+
+                const response = await fetch(`${GITHUB_API_BASE}/gists`, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load gists');
+                }
+
+                const gists = await response.json();
+
+                // Filter artifacts (gists with claude-artifact tag in description)
+                artifacts = gists.filter(gist =>
+                    gist.description && gist.description.includes('[claude-artifact]')
+                ).map(gist => ({
+                    id: gist.id,
+                    name: extractNameFromDescription(gist.description),
+                    description: extractDescriptionFromDescription(gist.description),
+                    url: gist.html_url,
+                    files: gist.files,
+                    created_at: gist.created_at,
+                    updated_at: gist.updated_at
+                }));
+
+                renderArtifacts();
+            } catch (error) {
+                console.error('Failed to load artifacts:', error);
+                showNotification('Failed to load artifacts from GitHub', 'error');
+            } finally {
+                document.getElementById('loadingMessage').style.display = 'none';
+            }
+        }
+
+        // Helper functions for gist description parsing
+        function extractNameFromDescription(description) {
+            const match = description.match(/\[claude-artifact\]\s*(.+?)(?:\s*-\s*(.+))?$/);
+            return match ? match[1].trim() : 'Untitled Artifact';
+        }
+
+        function extractDescriptionFromDescription(description) {
+            const match = description.match(/\[claude-artifact\]\s*(.+?)\s*-\s*(.+)$/);
+            return match ? match[2].trim() : 'No description';
+        }
+
+        // Render artifacts grid
         function renderArtifacts() {
             const grid = document.getElementById('artifactsGrid');
-            const baseUrl = window.location.origin + window.location.pathname;
 
             if (artifacts.length === 0) {
-                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #999; padding: 80px; font-size: 1.1rem; font-weight: 300; letter-spacing: 0.5px;">No artifacts yet. Click "ADD NEW ARTIFACT" to get started.</div>';
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #999; padding: 80px; font-size: 1.1rem;">No artifacts yet. Click "Add New Artifact" to get started.</div>';
                 return;
             }
 
-            grid.innerHTML = '';
-            updateCategoryFilter();
+            grid.innerHTML = artifacts.map((artifact, index) => {
+                const shareUrl = `${window.location.origin}${window.location.pathname}?gist=${artifact.id}`;
+                const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(shareUrl)}`;
 
-            artifacts.forEach((artifact, index) => {
-                // Create shareable URL with embedded data for cross-device sharing
-                const artifactData = {
-                    name: artifact.name,
-                    code: artifact.code,
-                    description: artifact.description
-                };
-                const encodedData = btoa(JSON.stringify(artifactData));
-                const shareableUrl = `${baseUrl}?share=${encodedData}`;
-
-                const card = document.createElement('div');
-                card.className = 'artifact-card';
-
-                card.innerHTML = `
-                    <div class="card-actions">
-                        <button class="icon-btn edit" onclick="editArtifact(${index})" title="Edit">✏️</button>
-                        <button class="icon-btn delete" onclick="deleteArtifact(${index})" title="Delete">🗑️</button>
-                    </div>
-                    <h2>${artifact.name}</h2>
-                    ${artifact.category ? `<div class="artifact-category">${artifact.category}</div>` : ''}
-                    <p>${artifact.description}</p>
-                    <div class="artifact-url">${shareableUrl}</div>
-                    <div class="preview-container">
-                        <button class="preview-toggle" onclick="togglePreview(${index})">👁️ Preview</button>
-                        <div class="preview-frame" id="preview-${index}" style="display: none;">
-                            <iframe srcdoc="${artifact.code.replace(/"/g, '&quot;')}" sandbox="allow-scripts" title="Artifact Preview"></iframe>
+                return `
+                    <div class="artifact-card">
+                        <div class="card-actions">
+                            <button class="icon-btn edit" onclick="editArtifact('${artifact.id}')" title="Edit">✏️</button>
+                            <button class="icon-btn delete" onclick="deleteArtifact('${artifact.id}')" title="Delete">🗑️</button>
+                        </div>
+                        <h2>${artifact.name}</h2>
+                        <p>${artifact.description}</p>
+                        <div class="artifact-meta">
+                            Created: ${new Date(artifact.created_at).toLocaleDateString()}<br>
+                            Updated: ${new Date(artifact.updated_at).toLocaleDateString()}
+                        </div>
+                        <div class="artifact-url">${shareUrl}</div>
+                        <div class="qr-code">
+                            <img src="${qrApiUrl}" alt="QR Code" style="border-radius: 4px;">
+                        </div>
+                        <div class="buttons">
+                            <a href="?gist=${artifact.id}" class="btn btn-primary" target="_blank">Open Artifact</a>
+                            <button onclick="copyUrl('${shareUrl}')" class="btn">📋 Copy URL</button>
+                            <button onclick="shareArtifact('${shareUrl}', '${artifact.name.replace(/'/g, "\\'")}', '${artifact.description.replace(/'/g, "\\'")}'))" class="btn">📤 Share</button>
                         </div>
                     </div>
-                    <div class="qr-code" id="qr-${index}">
-                        <div class="qr-loading">Generating QR code...</div>
-                    </div>
-                    <div class="buttons">
-                        <a href="#${artifact.id}" class="btn btn-primary">Open Artifact</a>
-                        <button onclick="copyUrl('${shareableUrl.replace(/'/g, "\\'")}' )" class="btn btn-secondary">📋 Copy URL</button>
-                        <button onclick="shareArtifact('${shareableUrl.replace(/'/g, "\\'")}', '${artifact.name.replace(/'/g, "\\'")}', '${artifact.description.replace(/'/g, "\\'")}'))" class="btn btn-tertiary">📤 Share</button>
-                    </div>
                 `;
-
-                grid.appendChild(card);
-
-                // Generate QR code after the element is in DOM
-                setTimeout(() => generateQRCode(`qr-${index}`, shareableUrl), 500);
-            });
+            }).join('');
         }
 
-        
+        // Check for gist parameter and show artifact
+        function checkForGist() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const gistId = urlParams.get('gist');
+
+            if (gistId) {
+                showArtifactFromGist(gistId);
+            }
+        }
+
+        // Show artifact from gist
+        async function showArtifactFromGist(gistId) {
+            try {
+                const response = await fetch(`${GITHUB_API_BASE}/gists/${gistId}`, {
+                    headers: {
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Gist not found');
+                }
+
+                const gist = await response.json();
+
+                // Find the HTML file in the gist
+                const htmlFile = Object.values(gist.files).find(file =>
+                    file.filename.endsWith('.html') || file.type === 'text/html'
+                );
+
+                if (!htmlFile) {
+                    throw new Error('No HTML file found in gist');
+                }
+
+                // Show artifact view
+                document.getElementById('authView').style.display = 'none';
+                document.getElementById('dashboardView').classList.remove('show');
+                document.getElementById('artifactView').classList.add('show');
+
+                // Load artifact content
+                const iframe = document.getElementById('artifactFrame');
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                doc.open();
+                doc.write(htmlFile.content);
+                doc.close();
+
+            } catch (error) {
+                console.error('Failed to load artifact:', error);
+                showErrorPage('Artifact not found or failed to load');
+            }
+        }
+
+        // Show error page in iframe
+        function showErrorPage(message) {
+            document.getElementById('authView').style.display = 'none';
+            document.getElementById('dashboardView').classList.remove('show');
+            document.getElementById('artifactView').classList.add('show');
+
+            const iframe = document.getElementById('artifactFrame');
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            doc.open();
+            doc.write(`
+                <html>
+                    <body style="font-family: Arial, sans-serif; padding: 40px; text-align: center; background: #f5f5f5;">
+                        <h1 style="color: #d32f2f;">Error Loading Artifact</h1>
+                        <p style="font-size: 1.2rem; margin: 20px 0;">${message}</p>
+                        <p style="color: #666;">Please check the URL and try again.</p>
+                    </body>
+                </html>
+            `);
+            doc.close();
+        }
+
+        // Modal functions
         function openAddModal() {
-            editingIndex = null;
+            editingArtifact = null;
             document.getElementById('modalTitle').textContent = 'Add New Artifact';
             document.getElementById('artifactName').value = '';
             document.getElementById('artifactDescription').value = '';
-            document.getElementById('artifactCategory').value = '';
             document.getElementById('artifactCode').value = '';
-            document.getElementById('artifactModal').style.display = 'block';
+            document.getElementById('artifactModal').classList.add('show');
         }
-        
-        function editArtifact(index) {
-            editingIndex = index;
-            const artifact = artifacts[index];
-            document.getElementById('modalTitle').textContent = 'Edit Artifact';
-            document.getElementById('artifactName').value = artifact.name;
-            document.getElementById('artifactDescription').value = artifact.description;
-            document.getElementById('artifactCategory').value = artifact.category || '';
-            document.getElementById('artifactCode').value = artifact.code;
-            document.getElementById('artifactModal').style.display = 'block';
-        }
-        
+
         function closeModal() {
-            document.getElementById('artifactModal').style.display = 'none';
-            editingIndex = null;
+            document.getElementById('artifactModal').classList.remove('show');
+            editingArtifact = null;
         }
-        
-        function saveArtifact(event) {
+
+        function editArtifact(gistId) {
+            // For editing, we'd need to fetch the gist content
+            // This is a simplified implementation
+            showNotification('Edit functionality coming soon!', 'info');
+        }
+
+        // Save artifact as gist
+        async function saveArtifact(event) {
             event.preventDefault();
+
+            const token = localStorage.getItem('github_token');
+            if (!token) {
+                showNotification('Please sign in with GitHub first', 'error');
+                return;
+            }
 
             try {
                 const name = document.getElementById('artifactName').value;
                 const description = document.getElementById('artifactDescription').value;
-                const category = document.getElementById('artifactCategory').value.trim();
                 const code = document.getElementById('artifactCode').value;
 
-                const artifact = {
-                    id: editingIndex !== null ? artifacts[editingIndex].id : generateId(name),
-                    name: name,
-                    description: description,
-                    category: category,
-                    code: code,
-                    createdAt: editingIndex !== null ? artifacts[editingIndex].createdAt : new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
-                };
-
-                const isUpdate = editingIndex !== null;
-
-                if (isUpdate) {
-                    artifacts[editingIndex] = artifact;
-                    showNotification('Artifact updated successfully! ✨', 'success');
-                } else {
-                    artifacts.push(artifact);
-                    showNotification('Artifact added successfully! 🎉', 'success');
-                }
-
-                localStorage.setItem('artifacts', JSON.stringify(artifacts));
-
-                closeModal();
-                renderArtifacts();
-
-                // Show success feedback
-                console.log('Artifact saved successfully:', artifact.name);
-            } catch (error) {
-                console.error('Error saving artifact:', error);
-                showNotification('Error saving artifact: ' + error.message, 'error');
-            }
-        }
-
-        function createBackup(artifact, operation) {
-            try {
-                // Create backup data with full context
-                const backupData = {
-                    operation: operation,
-                    timestamp: new Date().toISOString(),
-                    artifact: artifact,
-                    allArtifacts: artifacts.length,
-                    metadata: {
-                        userAgent: navigator.userAgent,
-                        url: window.location.href
+                const gistData = {
+                    description: `[claude-artifact] ${name} - ${description}`,
+                    public: false,
+                    files: {
+                        [`${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.html`]: {
+                            content: code
+                        }
                     }
                 };
 
-                // Create filename with timestamp and artifact ID
-                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
-                const safeName = artifact.name.replace(/[^a-zA-Z0-9]/g, '-').substring(0, 20);
-                const filename = `artifact-${safeName}-${timestamp}.json`;
-
-                // Create and download backup file
-                const dataStr = JSON.stringify(backupData, null, 2);
-                const dataBlob = new Blob([dataStr], {type: 'application/json'});
-                const url = URL.createObjectURL(dataBlob);
-
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = filename;
-                link.style.display = 'none';
-
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-
-                // Also save to localStorage backup history
-                let backupHistory = JSON.parse(localStorage.getItem('artifactBackups')) || [];
-                backupHistory.push({
-                    filename: filename,
-                    timestamp: backupData.timestamp,
-                    operation: operation,
-                    artifactId: artifact.id,
-                    artifactName: artifact.name
+                const response = await fetch(`${GITHUB_API_BASE}/gists`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(gistData)
                 });
 
-                // Keep only last 20 backups
-                if (backupHistory.length > 20) {
-                    backupHistory = backupHistory.slice(-20);
+                if (!response.ok) {
+                    throw new Error('Failed to create gist');
                 }
 
-                localStorage.setItem('artifactBackups', JSON.stringify(backupHistory));
-
-                showNotification('📁 Backup created: ' + filename, 'info');
+                const gist = await response.json();
+                showNotification('Artifact saved successfully! 🎉', 'success');
+                closeModal();
+                loadArtifacts(); // Reload the list
 
             } catch (error) {
-                console.error('Backup creation failed:', error);
-                showNotification('⚠️ Backup failed: ' + error.message, 'error');
+                console.error('Failed to save artifact:', error);
+                showNotification('Failed to save artifact: ' + error.message, 'error');
             }
         }
 
-        function backupAllArtifacts() {
-            if (artifacts.length === 0) {
-                showNotification('No artifacts to backup', 'info');
+        // Delete artifact
+        async function deleteArtifact(gistId) {
+            if (!confirm('Delete this artifact? This cannot be undone.')) {
                 return;
             }
 
+            const token = localStorage.getItem('github_token');
+            if (!token) return;
+
             try {
-                // Create comprehensive backup
-                const fullBackup = {
-                    operation: 'full-backup',
-                    timestamp: new Date().toISOString(),
-                    artifactCount: artifacts.length,
-                    artifacts: artifacts,
-                    backupHistory: JSON.parse(localStorage.getItem('artifactBackups')) || [],
-                    metadata: {
-                        userAgent: navigator.userAgent,
-                        url: window.location.href,
-                        version: '2.0'
+                const response = await fetch(`${GITHUB_API_BASE}/gists/${gistId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
                     }
-                };
+                });
 
-                // Create filename
-                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
-                const filename = `artifacts-full-backup-${timestamp}.json`;
+                if (!response.ok) {
+                    throw new Error('Failed to delete gist');
+                }
 
-                // Create and download backup file
-                const dataStr = JSON.stringify(fullBackup, null, 2);
-                const dataBlob = new Blob([dataStr], {type: 'application/json'});
-                const url = URL.createObjectURL(dataBlob);
-
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = filename;
-                link.style.display = 'none';
-
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-
-                showNotification(`📦 Full backup created: ${artifacts.length} artifacts saved`, 'success');
+                showNotification('Artifact deleted successfully', 'success');
+                loadArtifacts(); // Reload the list
 
             } catch (error) {
-                console.error('Full backup failed:', error);
-                showNotification('⚠️ Full backup failed: ' + error.message, 'error');
+                console.error('Failed to delete artifact:', error);
+                showNotification('Failed to delete artifact: ' + error.message, 'error');
             }
         }
 
-        function importArtifacts() {
-            // Create hidden file input
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.accept = '.json';
-            fileInput.style.display = 'none';
-
-            fileInput.onchange = function(event) {
-                const file = event.target.files[0];
-                if (!file) return;
-
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    try {
-                        const backupData = JSON.parse(e.target.result);
-
-                        let artifactsToImport = [];
-
-                        // Handle different backup formats
-                        if (backupData.artifacts && Array.isArray(backupData.artifacts)) {
-                            // Full backup format
-                            artifactsToImport = backupData.artifacts;
-                        } else if (backupData.artifact) {
-                            // Single artifact backup format
-                            artifactsToImport = [backupData.artifact];
-                        } else if (Array.isArray(backupData)) {
-                            // Direct array format
-                            artifactsToImport = backupData;
-                        } else {
-                            throw new Error('Invalid backup format');
-                        }
-
-                        if (artifactsToImport.length === 0) {
-                            showNotification('No artifacts found in backup file', 'error');
-                            return;
-                        }
-
-                        const importCount = artifactsToImport.length;
-                        const existingCount = artifacts.length;
-
-                        if (existingCount > 0) {
-                            const confirmMessage = `Import ${importCount} artifact(s)? This will be added to your existing ${existingCount} artifact(s).`;
-                            if (!confirm(confirmMessage)) return;
-                        }
-
-                        // Add imported artifacts
-                        artifactsToImport.forEach(artifact => {
-                            // Ensure artifact has required fields
-                            artifact.id = artifact.id || generateId(artifact.name || 'Imported Artifact');
-                            artifact.createdAt = artifact.createdAt || new Date().toISOString();
-                            artifact.updatedAt = new Date().toISOString();
-
-                            // Check for duplicates
-                            const existingIndex = artifacts.findIndex(a => a.id === artifact.id);
-                            if (existingIndex >= 0) {
-                                artifacts[existingIndex] = artifact;
-                            } else {
-                                artifacts.push(artifact);
-                            }
-                        });
-
-                        // Save to localStorage
-                        localStorage.setItem('artifacts', JSON.stringify(artifacts));
-
-                        // Refresh display
-                        renderArtifacts();
-
-                        showNotification(`📂 Successfully imported ${importCount} artifact(s)!`, 'success');
-
-                    } catch (error) {
-                        console.error('Import failed:', error);
-                        showNotification('⚠️ Import failed: ' + error.message, 'error');
-                    }
-                };
-
-                reader.readAsText(file);
-                document.body.removeChild(fileInput);
-            };
-
-            // Add to DOM and trigger click
-            document.body.appendChild(fileInput);
-            fileInput.click();
-        }
-        
-        function deleteArtifact(index) {
-            const artifact = artifacts[index];
-            if (confirm(`Delete "${artifact.name}"? This cannot be undone.`)) {
-                // Create backup before deleting
-                createBackup(artifact, 'delete');
-
-                artifacts.splice(index, 1);
-                localStorage.setItem('artifacts', JSON.stringify(artifacts));
-                renderArtifacts();
-
-                showNotification(`Deleted "${artifact.name}" (backup created)`, 'success');
-            }
-        }
-        
-        function generateId(name) {
-            return name.toLowerCase()
-                .replace(/[^a-z0-9]+/g, '-')
-                .replace(/^-|-$/g, '')
-                + '-' + Date.now();
-        }
-        
+        // Utility functions
         function copyUrl(url) {
             navigator.clipboard.writeText(url).then(() => {
                 showNotification('URL copied to clipboard! 📋', 'success');
@@ -1095,7 +937,6 @@
                     url: url
                 });
             } else {
-                // Fallback to copy URL if Web Share API not available
                 copyUrl(url);
                 showNotification('Use the share button to share this artifact!', 'info');
             }
@@ -1119,106 +960,39 @@
             }, 3000);
         }
 
-        function togglePreview(index) {
-            const previewFrame = document.getElementById(`preview-${index}`);
-            const toggleBtn = previewFrame.previousElementSibling;
+        // Event listeners
+        document.getElementById('artifactForm').addEventListener('submit', saveArtifact);
 
-            if (previewFrame.style.display === 'none') {
-                previewFrame.style.display = 'block';
-                toggleBtn.innerHTML = '👁️ Hide Preview';
-            } else {
-                previewFrame.style.display = 'none';
-                toggleBtn.innerHTML = '👁️ Preview';
-            }
-        }
-
-        function updateCategoryFilter() {
-            const categoryFilter = document.getElementById('categoryFilter');
-            const categories = new Set();
-
-            artifacts.forEach(artifact => {
-                if (artifact.category && artifact.category.trim()) {
-                    categories.add(artifact.category.trim());
-                }
-            });
-
-            // Clear existing options except "All Categories"
-            categoryFilter.innerHTML = '<option value="">All Categories</option>';
-
-            // Add unique categories
-            Array.from(categories).sort().forEach(category => {
-                const option = document.createElement('option');
-                option.value = category;
-                option.textContent = category;
-                categoryFilter.appendChild(option);
-            });
-        }
-
-        function filterByCategory() {
-            const selectedCategory = document.getElementById('categoryFilter').value;
-            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
-
-            filterArtifacts(searchQuery, selectedCategory);
-        }
-
-        function searchArtifacts() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const selectedCategory = document.getElementById('categoryFilter').value;
-
-            filterArtifacts(query, selectedCategory);
-        }
-
-        function filterArtifacts(searchQuery, categoryFilter) {
-            const cards = document.querySelectorAll('.artifact-card');
-
-            cards.forEach(card => {
-                const title = card.querySelector('h2').textContent.toLowerCase();
-                const description = card.querySelector('p').textContent.toLowerCase();
-                const categoryElement = card.querySelector('.artifact-category');
-                const category = categoryElement ? categoryElement.textContent : '';
-
-                const matchesSearch = searchQuery === '' ||
-                    title.includes(searchQuery) ||
-                    description.includes(searchQuery) ||
-                    category.toLowerCase().includes(searchQuery);
-
-                const matchesCategory = categoryFilter === '' || category === categoryFilter;
-
-                if (matchesSearch && matchesCategory) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        }
-        
         // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('artifactModal');
-            if (event.target === modal) {
+        document.getElementById('artifactModal').addEventListener('click', function(e) {
+            if (e.target === this) {
                 closeModal();
             }
-        }
+        });
 
-        // Initialize page when DOM is loaded
+        // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, initializing page...');
+            // Check for OAuth callback
+            handleOAuthCallback();
 
-            // Attach form submit handler
-            const form = document.getElementById('artifactForm');
-            if (form) {
-                form.addEventListener('submit', saveArtifact);
-                console.log('Form submit handler attached');
+            // Check for gist parameter
+            checkForGist();
+
+            // If no gist, check authentication
+            const urlParams = new URLSearchParams(window.location.search);
+            if (!urlParams.get('gist')) {
+                checkAuth();
             }
-
-            // Initialize the page
-            checkRoute();
         });
 
-        // Handle hash changes for navigation
-        window.addEventListener('hashchange', function() {
-            checkRoute();
-        });
+        // Simple token input for development (remove in production)
+        if (window.location.hash === '#dev') {
+            const token = prompt('Enter your GitHub personal access token (with gist permissions):');
+            if (token) {
+                localStorage.setItem('github_token', token);
+                location.reload();
+            }
+        }
     </script>
 </body>
 </html>
