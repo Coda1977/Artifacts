@@ -810,9 +810,12 @@
         function showArtifactFromURL(encodedData) {
             console.log('showArtifactFromURL called');
             try {
-                // Remove 'data:' prefix and decode
+                // Remove 'data:' prefix and decode (Unicode-safe)
                 const base64Data = encodedData.substring(5);
-                const jsonData = atob(base64Data);
+                const decodedData = atob(base64Data);
+                const jsonData = decodeURIComponent(Array.prototype.map.call(decodedData, function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
                 const artifact = JSON.parse(jsonData);
 
                 console.log('Decoded artifact:', artifact.name);
@@ -872,7 +875,10 @@
                     category: artifact.category
                 };
                 const jsonData = JSON.stringify(artifactData);
-                const base64Data = btoa(jsonData);
+                // Unicode-safe base64 encoding
+                const base64Data = btoa(encodeURIComponent(jsonData).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+                    return String.fromCharCode('0x' + p1);
+                }));
                 const shareableUrl = `${baseUrl}#data:${base64Data}`;
 
                 // Also keep the old ID-based URL for dashboard use
@@ -970,9 +976,6 @@
                 }
 
                 localStorage.setItem('artifacts', JSON.stringify(artifacts));
-
-                // Create automatic backup
-                createBackup(artifact, isUpdate ? 'update' : 'create');
 
                 closeModal();
                 renderArtifacts();
