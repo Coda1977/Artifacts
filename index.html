@@ -72,6 +72,26 @@
             border-color: #333;
         }
 
+        .backup-btn {
+            background: white;
+            border: 1px solid #333;
+            color: #333;
+            padding: 16px 32px;
+            font-size: 1rem;
+            font-weight: 400;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .backup-btn:hover {
+            background: #333;
+            color: white;
+            border-color: #333;
+        }
+
         .search-container {
             max-width: 600px;
             margin: 0 auto 50px;
@@ -504,7 +524,10 @@
                 <p>Manage and share your workshop tools</p>
             </header>
             
-            <button class="add-new-btn" onclick="openAddModal()">+ Add New Artifact</button>
+            <div style="display: flex; gap: 20px; justify-content: center; margin-bottom: 30px;">
+                <button class="add-new-btn" onclick="openAddModal()">+ Add New Artifact</button>
+                <button class="backup-btn" onclick="backupAllArtifacts()">📁 Backup All</button>
+            </div>
 
             <div class="search-container">
                 <input type="text" id="searchInput" placeholder="🔍 Search artifacts..." oninput="searchArtifacts()">
@@ -666,26 +689,36 @@
         }
 
         function generateQRCode(elementId, url) {
+            console.log('generateQRCode called with:', elementId, url);
             const qrContainer = document.getElementById(elementId);
+
             if (!qrContainer) {
-                console.log('QR container not found:', elementId);
+                console.error('QR container not found:', elementId);
                 return;
             }
 
+            console.log('QR container found:', qrContainer);
+
             function createQR() {
+                console.log('Checking QRCode library availability...');
                 if (typeof QRCode === 'undefined') {
-                    console.log('QRCode library not loaded yet, retrying...');
+                    console.log('QRCode library not loaded yet, retrying in 100ms...');
                     setTimeout(createQR, 100);
                     return;
                 }
 
+                console.log('QRCode library available, proceeding with generation...');
+
                 try {
-                    // Clear loading message
-                    qrContainer.innerHTML = '';
+                    // Clear loading message but keep debug info
+                    qrContainer.innerHTML = '<div style="color: blue; font-size: 12px;">Library loaded, generating...</div>';
 
                     // Create canvas
                     const canvas = document.createElement('canvas');
-                    console.log('Generating QR code for:', url);
+                    canvas.style.display = 'block';
+                    canvas.style.margin = '10px auto';
+
+                    console.log('About to call QRCode.toCanvas for URL:', url);
 
                     QRCode.toCanvas(canvas, url, {
                         width: 150,
@@ -696,10 +729,13 @@
                         }
                     }, (error) => {
                         if (error) {
-                            console.error('QR Code generation error:', error);
-                            qrContainer.innerHTML = '<div class="qr-error">QR code failed to generate: ' + error.message + '</div>';
+                            console.error('QR Code generation callback error:', error);
+                            qrContainer.innerHTML = '<div class="qr-error">QR generation failed: ' + error.message + '</div>';
                         } else {
-                            console.log('QR code generated successfully');
+                            console.log('QR code generation completed successfully!');
+
+                            // Clear container and add canvas
+                            qrContainer.innerHTML = '';
                             qrContainer.appendChild(canvas);
 
                             // Add download button
@@ -708,11 +744,13 @@
                             downloadBtn.innerHTML = '📥 Save QR';
                             downloadBtn.onclick = () => downloadQRCode(canvas, url);
                             qrContainer.appendChild(downloadBtn);
+
+                            console.log('QR code and download button added to container');
                         }
                     });
-                } catch (error) {
-                    console.error('Error generating QR code:', error);
-                    qrContainer.innerHTML = '<div class="qr-error">QR code failed to generate: ' + error.message + '</div>';
+                } catch (syncError) {
+                    console.error('Synchronous error in QR generation:', syncError);
+                    qrContainer.innerHTML = '<div class="qr-error">Sync error: ' + syncError.message + '</div>';
                 }
             }
 
@@ -768,16 +806,26 @@
                     name: name,
                     description: description,
                     category: category,
-                    code: code
+                    code: code,
+                    createdAt: editingIndex !== null ? artifacts[editingIndex].createdAt : new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
                 };
 
-                if (editingIndex !== null) {
+                const isUpdate = editingIndex !== null;
+
+                if (isUpdate) {
                     artifacts[editingIndex] = artifact;
+                    showNotification('Artifact updated successfully! ✨', 'success');
                 } else {
                     artifacts.push(artifact);
+                    showNotification('Artifact added successfully! 🎉', 'success');
                 }
 
                 localStorage.setItem('artifacts', JSON.stringify(artifacts));
+
+                // Create automatic backup
+                createBackup(artifact, isUpdate ? 'update' : 'create');
+
                 closeModal();
                 renderArtifacts();
 
@@ -785,15 +833,128 @@
                 console.log('Artifact saved successfully:', artifact.name);
             } catch (error) {
                 console.error('Error saving artifact:', error);
-                alert('Error saving artifact. Please check the console for details.');
+                showNotification('Error saving artifact: ' + error.message, 'error');
+            }
+        }
+
+        function createBackup(artifact, operation) {
+            try {
+                // Create backup data with full context
+                const backupData = {
+                    operation: operation,
+                    timestamp: new Date().toISOString(),
+                    artifact: artifact,
+                    allArtifacts: artifacts.length,
+                    metadata: {
+                        userAgent: navigator.userAgent,
+                        url: window.location.href
+                    }
+                };
+
+                // Create filename with timestamp and artifact ID
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+                const safeName = artifact.name.replace(/[^a-zA-Z0-9]/g, '-').substring(0, 20);
+                const filename = `artifact-${safeName}-${timestamp}.json`;
+
+                // Create and download backup file
+                const dataStr = JSON.stringify(backupData, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                const url = URL.createObjectURL(dataBlob);
+
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                link.style.display = 'none';
+
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+                // Also save to localStorage backup history
+                let backupHistory = JSON.parse(localStorage.getItem('artifactBackups')) || [];
+                backupHistory.push({
+                    filename: filename,
+                    timestamp: backupData.timestamp,
+                    operation: operation,
+                    artifactId: artifact.id,
+                    artifactName: artifact.name
+                });
+
+                // Keep only last 20 backups
+                if (backupHistory.length > 20) {
+                    backupHistory = backupHistory.slice(-20);
+                }
+
+                localStorage.setItem('artifactBackups', JSON.stringify(backupHistory));
+
+                showNotification('📁 Backup created: ' + filename, 'info');
+
+            } catch (error) {
+                console.error('Backup creation failed:', error);
+                showNotification('⚠️ Backup failed: ' + error.message, 'error');
+            }
+        }
+
+        function backupAllArtifacts() {
+            if (artifacts.length === 0) {
+                showNotification('No artifacts to backup', 'info');
+                return;
+            }
+
+            try {
+                // Create comprehensive backup
+                const fullBackup = {
+                    operation: 'full-backup',
+                    timestamp: new Date().toISOString(),
+                    artifactCount: artifacts.length,
+                    artifacts: artifacts,
+                    backupHistory: JSON.parse(localStorage.getItem('artifactBackups')) || [],
+                    metadata: {
+                        userAgent: navigator.userAgent,
+                        url: window.location.href,
+                        version: '2.0'
+                    }
+                };
+
+                // Create filename
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+                const filename = `artifacts-full-backup-${timestamp}.json`;
+
+                // Create and download backup file
+                const dataStr = JSON.stringify(fullBackup, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                const url = URL.createObjectURL(dataBlob);
+
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                link.style.display = 'none';
+
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+                showNotification(`📦 Full backup created: ${artifacts.length} artifacts saved`, 'success');
+
+            } catch (error) {
+                console.error('Full backup failed:', error);
+                showNotification('⚠️ Full backup failed: ' + error.message, 'error');
             }
         }
         
         function deleteArtifact(index) {
-            if (confirm(`Delete "${artifacts[index].name}"? This cannot be undone.`)) {
+            const artifact = artifacts[index];
+            if (confirm(`Delete "${artifact.name}"? This cannot be undone.`)) {
+                // Create backup before deleting
+                createBackup(artifact, 'delete');
+
                 artifacts.splice(index, 1);
                 localStorage.setItem('artifacts', JSON.stringify(artifacts));
                 renderArtifacts();
+
+                showNotification(`Deleted "${artifact.name}" (backup created)`, 'success');
             }
         }
         
